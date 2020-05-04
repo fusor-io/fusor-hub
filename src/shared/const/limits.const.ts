@@ -1,0 +1,2 @@
+export const LIMIT_MAX_NODE_ID_LENGTH = 32;
+export const LIMIT_MAX_SENSOR_ID_LENGTH = 32;

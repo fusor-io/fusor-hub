@@ -1,18 +1,20 @@
-import { Controller, Get, Body, Post, Param } from '@nestjs/common';
-import { NodePostPayload } from '../dto/node.dto';
+import { Controller, Body, Post, Param } from '@nestjs/common';
+import { PostBatchPayloadDto, PostSensorParamsDto, PostBatchParamsDto } from '../dto';
 import { StorageService } from '../service/storage.service';
 
 @Controller('storage')
 export class StorageController {
   constructor(private readonly _storageService: StorageService) {}
 
-  @Get('')
-  helloWorld() {
-    return 'hello';
+  @Post(':nodeId/batch')
+  batchPost(@Body() body: PostBatchPayloadDto, @Param() params: PostBatchParamsDto) {
+    this._storageService.postBatch(params.nodeId, body);
   }
 
-  @Post('/:node')
-  post(@Body() body: NodePostPayload, @Param('node') node: string) {
-    this._storageService._post(node, body);
+  @Post(':nodeId/:sensorId/:value')
+  async post(@Param() params: PostSensorParamsDto) {
+    const { nodeId, sensorId, value } = params;
+    // TODO change Int to Float
+    this._storageService.saveSensorReading(nodeId, sensorId, parseInt(value));
   }
 }

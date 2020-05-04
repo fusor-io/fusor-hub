@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NodePostPayload, SensorDataPostPayload } from '../dto/node.dto';
+import { PostBatchPayloadDto, SensorDataPayload } from '../dto/post-batch-payload.dto';
 import { MysqlService } from 'src/shared/services/mysql/service/mysql.service';
+import { inspect } from 'util';
 
 @Injectable()
 export class StorageService {
@@ -8,15 +9,15 @@ export class StorageService {
 
   constructor(private readonly _mySqlService: MysqlService) {}
 
-  private async _saveSensorReading(sensorId: string, value: number): Promise<void> {
+  public async saveSensorReading(nodeId: string, sensorId: string, value: number): Promise<void> {
     try {
-      await this._mySqlService.writeValue(sensorId, value);
+      await this._mySqlService.writeValue(nodeId, sensorId, value);
     } catch (error) {
       this._logger.error(`Failed storing ${sensorId}`, error?.message);
     }
   }
 
-  private async _saveParam(nodeId: string, paramId: string, value: number): Promise<void> {
+  public async saveParam(nodeId: string, paramId: string, value: number): Promise<void> {
     try {
       await this._mySqlService.writeParam(nodeId, paramId, value);
     } catch (error) {
@@ -24,28 +25,37 @@ export class StorageService {
     }
   }
 
-  private async _saveReadings(payload: SensorDataPostPayload): Promise<void> {
-    if (payload && Object.keys(payload).length) {
-      await Promise.all(
-        Object.keys(payload).map(sensorId => this._saveSensorReading(sensorId, payload[sensorId])),
+  async postBatch(nodeId: string, payload: PostBatchPayloadDto): Promise<void> {
+    try {
+      if (payload) {
+        await Promise.all([
+          this._saveReadingsBatch(nodeId, { ...payload.r, ...payload.readings }),
+          this._saveParamsBatch(nodeId, { ...payload.p, ...payload.params }),
+        ]);
+      }
+    } catch (error) {
+      this._logger.error(
+        `Failed posting batch for node: ${nodeId}, payload: ${inspect(payload)}`,
+        error?.message,
       );
     }
   }
 
-  private async _saveParams(nodeId: string, payload: SensorDataPostPayload): Promise<void> {
+  private async _saveReadingsBatch(nodeId: string, payload: SensorDataPayload): Promise<void> {
     if (payload && Object.keys(payload).length) {
       await Promise.all(
-        Object.keys(payload).map(sensorId => this._saveParam(nodeId, sensorId, payload[sensorId])),
+        Object.keys(payload).map(sensorId =>
+          this.saveSensorReading(nodeId, sensorId, payload[sensorId]),
+        ),
       );
     }
   }
 
-  async _post(nodeId: string, payload: NodePostPayload): Promise<void> {
-    if (payload) {
-      await Promise.all([
-        this._saveReadings({ ...payload.r, ...payload.readings }),
-        this._saveParams(nodeId, { ...payload.p, ...payload.params }),
-      ]);
+  private async _saveParamsBatch(nodeId: string, payload: SensorDataPayload): Promise<void> {
+    if (payload && Object.keys(payload).length) {
+      await Promise.all(
+        Object.keys(payload).map(sensorId => this.saveParam(nodeId, sensorId, payload[sensorId])),
+      );
     }
   }
 }

@@ -49,12 +49,13 @@ export class MysqlService {
     return queryResult;
   }
 
-  async writeValue(sensorId: string, value: number): Promise<void> {
-    await this.createTableIfNotExists(VALUE_TABLE, `${VALUE_TABLE_PREFIX}${sensorId}`);
+  async writeValue(nodeId: string, sensorId: string, value: number): Promise<void> {
+    const tableName = this._generateTableName(nodeId, sensorId);
+    await this.createTableIfNotExists(VALUE_TABLE, tableName);
 
     await this.query({
       sql: `INSERT INTO ?? (\`value\`) VALUES(?);`,
-      values: [sensorId, value],
+      values: [tableName, value],
     });
   }
 
@@ -62,8 +63,8 @@ export class MysqlService {
     await this.createTableIfNotExists(PARAM_TABLE, PARAM_TABLE_NAME);
 
     await this.query({
-      sql: `INSERT INTO ?? (\`node\`, \`param\`, \`value\`) VALUES(?,?,?);`,
-      values: [PARAM_TABLE_NAME, nodeId, paramId, value],
+      sql: `INSERT INTO ?? (\`node\`, \`param\`, \`value\`) VALUES(?,?,?) ON DUPLICATE KEY UPDATE \`value\`=?`,
+      values: [PARAM_TABLE_NAME, nodeId, paramId, value, value],
     });
   }
 
@@ -108,5 +109,11 @@ export class MysqlService {
       this._logger.error('Failed checking database', error?.message);
       throw new Error(error?.message);
     }
+  }
+
+  private _generateTableName(nodeId: string, sensorId: string): string {
+    const nodeIdCleaned = nodeId.replace(/\-/g, '');
+    const sensorIdCleaned = sensorId.replace(/\-/g, '');
+    return `${VALUE_TABLE_PREFIX}_${nodeIdCleaned}_${sensorIdCleaned}`;
   }
 }
