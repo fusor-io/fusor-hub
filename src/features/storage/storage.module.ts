@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { StorageController } from './controller/storage.controller';
 import { StorageService } from './service/storage.service';
-import { MysqlModule } from 'src/shared/services/mysql/mysql.module';
+import { DatabaseModule } from 'src/shared/services/database/database.module';
 
 @Module({
-  imports: [MysqlModule],
+  imports: [DatabaseModule],
   controllers: [StorageController],
   providers: [StorageService],
 })

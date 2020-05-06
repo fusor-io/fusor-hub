@@ -1,25 +1,35 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PostBatchPayloadDto, SensorDataPayload } from '../dto/post-batch-payload.dto';
-import { MysqlService } from 'src/shared/services/mysql/service/mysql.service';
+import { DatabaseService } from 'src/shared/services/database/service/database.service';
 import { inspect } from 'util';
 
 @Injectable()
 export class StorageService {
   private readonly _logger = new Logger(this.constructor.name);
 
-  constructor(private readonly _mySqlService: MysqlService) {}
+  constructor(private readonly _databaseService: DatabaseService) {}
 
   public async saveSensorReading(nodeId: string, sensorId: string, value: number): Promise<void> {
     try {
-      await this._mySqlService.writeValue(nodeId, sensorId, value);
+      await this._databaseService.writeValue(nodeId, sensorId, value);
     } catch (error) {
       this._logger.error(`Failed storing ${sensorId}`, error?.message);
     }
   }
 
+  public async getParam(nodeId: string, paramId: string): Promise<string> {
+    try {
+      const value = await this._databaseService.readParam(nodeId, paramId);
+      return value === undefined ? '' : value.toString();
+    } catch (error) {
+      this._logger.error(`Failed reading param ${nodeId}:${paramId}`, error?.message);
+      return '';
+    }
+  }
+
   public async saveParam(nodeId: string, paramId: string, value: number): Promise<void> {
     try {
-      await this._mySqlService.writeParam(nodeId, paramId, value);
+      await this._databaseService.writeParam(nodeId, paramId, value);
     } catch (error) {
       this._logger.error(`Failed storing ${paramId}`, error?.message);
     }

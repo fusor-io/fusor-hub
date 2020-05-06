@@ -6,9 +6,11 @@ import { ConfigService } from '@nestjs/config';
 import { Config } from 'src/shared/type';
 import { DEFAULT_MYSQL } from 'src/shared/const';
 import { VALUE_TABLE, PARAM_TABLE, VALUE_TABLE_PREFIX, PARAM_TABLE_NAME } from '../sql';
+import { NodeParam } from '../type';
+import { NodeParamsDto } from '../dto';
 
 @Injectable()
-export class MysqlService {
+export class DatabaseService {
   private readonly _logger = new Logger(this.constructor.name);
   private readonly _tableCache = {};
   private _pool: Pool;
@@ -40,9 +42,9 @@ export class MysqlService {
     );
   }
 
-  async query<T>(query: QueryOptions): Promise<T> {
+  async query<T>(query: QueryOptions): Promise<T[]> {
     const connection = await this.getConnection();
-    const queryResult: T = await new Promise((resolve, reject) =>
+    const queryResult: T[] = await new Promise((resolve, reject) =>
       connection.query(query, (error, result) => (error ? reject(error) : resolve(result))),
     );
     connection.release();
@@ -66,6 +68,22 @@ export class MysqlService {
       sql: `INSERT INTO ?? (\`node\`, \`param\`, \`value\`) VALUES(?,?,?) ON DUPLICATE KEY UPDATE \`value\`=?`,
       values: [PARAM_TABLE_NAME, nodeId, paramId, value, value],
     });
+  }
+
+  async readParam(nodeId: string, paramId: string): Promise<number> {
+    const results = await this.query<NodeParam>({
+      sql: `SELECT \`value\` FROM ?? WHERE \`node\`=? AND \`param\`=? LIMIT 1`,
+      values: [PARAM_TABLE_NAME, nodeId, paramId],
+    });
+    return results && results[0]?.value;
+  }
+
+  async readParams(nodeId: string): Promise<NodeParamsDto> {
+    const results = await this.query<NodeParam>({
+      sql: `SELECT \`value\` FROM ?? WHERE \`node\`=?`,
+      values: [PARAM_TABLE_NAME, nodeId],
+    });
+    return new NodeParamsDto(results);
   }
 
   async createTableIfNotExists(query: string, tableName: string): Promise<void> {
