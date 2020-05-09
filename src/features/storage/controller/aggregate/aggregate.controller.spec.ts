@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { StorageController } from './storage.controller';
+import { AggregateController } from './aggregate.controller';
 
-describe('Storage Controller', () => {
-  let controller: StorageController;
+describe('Aggregate Controller', () => {
+  let controller: AggregateController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [StorageController],
+      controllers: [AggregateController],
     }).compile();
 
-    controller = module.get<StorageController>(StorageController);
+    controller = module.get<AggregateController>(AggregateController);
   });
 
   it('should be defined', () => {

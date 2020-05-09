@@ -5,9 +5,16 @@ import { ConfigService } from '@nestjs/config';
 
 import { Config } from 'src/shared/type';
 import { DEFAULT_MYSQL } from 'src/shared/const';
-import { VALUE_TABLE, PARAM_TABLE, VALUE_TABLE_PREFIX, PARAM_TABLE_NAME } from '../sql';
-import { NodeParam } from '../type';
+import {
+  LOG_TABLE_DOUBLE,
+  PARAM_TABLE,
+  VALUE_TABLE_PREFIX,
+  PARAM_TABLE_NAME,
+  LOG_TABLE_INT,
+} from '../sql';
+import { NodeParam, LoggingType, NodeLogging } from '../type';
 import { NodeParamsDto } from '../dto';
+import { sanitizeName } from 'src/shared/utils/sanitizer';
 
 @Injectable()
 export class DatabaseService {
@@ -51,9 +58,15 @@ export class DatabaseService {
     return queryResult;
   }
 
-  async writeValue(nodeId: string, sensorId: string, value: number): Promise<void> {
-    const tableName = this._generateTableName(nodeId, sensorId);
-    await this.createTableIfNotExists(VALUE_TABLE, tableName);
+  async logParamValue(
+    nodeId: string,
+    paramId: string,
+    value: number,
+    loggingType: LoggingType,
+  ): Promise<void> {
+    const tableName = this._generateTableName(nodeId, paramId, loggingType);
+    const tableTemplate = loggingType === LoggingType.int ? LOG_TABLE_INT : LOG_TABLE_DOUBLE;
+    await this.createTableIfNotExists(tableTemplate, tableName);
 
     await this.query({
       sql: `INSERT INTO ?? (\`value\`) VALUES(?);`,
@@ -61,7 +74,7 @@ export class DatabaseService {
     });
   }
 
-  async writeParam(nodeId: string, paramId: string, value: number): Promise<void> {
+  async writeParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
     await this.createTableIfNotExists(PARAM_TABLE, PARAM_TABLE_NAME);
 
     await this.query({
@@ -70,7 +83,15 @@ export class DatabaseService {
     });
   }
 
-  async readParam(nodeId: string, paramId: string): Promise<number> {
+  async getLoggingType(nodeId: string, paramId: string): Promise<LoggingType> {
+    const results = await this.query<NodeLogging>({
+      sql: `SELECT \`logging\` FROM ?? WHERE \`node\`=? AND \`param\`=? LIMIT 1`,
+      values: [PARAM_TABLE_NAME, nodeId, paramId],
+    });
+    return (results && results[0].logging) || LoggingType.no;
+  }
+
+  async readParamValue(nodeId: string, paramId: string): Promise<number> {
     const results = await this.query<NodeParam>({
       sql: `SELECT \`value\` FROM ?? WHERE \`node\`=? AND \`param\`=? LIMIT 1`,
       values: [PARAM_TABLE_NAME, nodeId, paramId],
@@ -78,7 +99,7 @@ export class DatabaseService {
     return results && results[0]?.value;
   }
 
-  async readParams(nodeId: string): Promise<NodeParamsDto> {
+  async readNodeParams(nodeId: string): Promise<NodeParamsDto> {
     const results = await this.query<NodeParam>({
       sql: `SELECT \`value\` FROM ?? WHERE \`node\`=?`,
       values: [PARAM_TABLE_NAME, nodeId],
@@ -129,9 +150,10 @@ export class DatabaseService {
     }
   }
 
-  private _generateTableName(nodeId: string, sensorId: string): string {
-    const nodeIdCleaned = nodeId.replace(/\-/g, '');
-    const sensorIdCleaned = sensorId.replace(/\-/g, '');
-    return `${VALUE_TABLE_PREFIX}_${nodeIdCleaned}_${sensorIdCleaned}`;
+  private _generateTableName(nodeId: string, sensorId: string, loggingType: LoggingType): string {
+    const nodeIdCleaned = sanitizeName(nodeId);
+    const paramIdCleaned = sanitizeName(sensorId);
+    const dataType = loggingType === LoggingType.int ? 'i' : 'd';
+    return `${VALUE_TABLE_PREFIX}_${nodeIdCleaned}_${paramIdCleaned}_${dataType}`;
   }
 }
