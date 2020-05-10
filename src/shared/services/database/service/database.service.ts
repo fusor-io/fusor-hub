@@ -12,7 +12,7 @@ import {
   PARAM_TABLE_NAME,
   LOG_TABLE_INT,
 } from '../sql';
-import { NodeParam, LoggingType, NodeLogging } from '../type';
+import { NodeParam, LoggingType, NodeLogging, AggregateView } from '../type';
 import { NodeParamsDto } from '../dto';
 import { sanitizeName } from 'src/shared/utils/sanitizer';
 
@@ -105,6 +105,23 @@ export class DatabaseService {
       values: [PARAM_TABLE_NAME, nodeId],
     });
     return new NodeParamsDto(results);
+  }
+
+  async aggregateParam(
+    nodeId: string,
+    paramId: string,
+    start: number,
+    end: number,
+    windowSize: number,
+  ): Promise<AggregateView[]> {
+    const loggingType = await this.getLoggingType(nodeId, paramId);
+    const tableName = this._generateTableName(nodeId, paramId, loggingType);
+    return this.query<AggregateView>({
+      sql: `SELECT FLOOR(UNIX_TIMESTAMP(ts)/?)*? AS frame, AVG(value) as avg FROM ??
+            WHERE UNIX_TIMESTAMP(ts) >= ? AND UNIX_TIMESTAMP(ts) < ?
+            GROUP BY frame LIMIT 100`,
+      values: [windowSize, windowSize, tableName, start, end],
+    });
   }
 
   async createTableIfNotExists(query: string, tableName: string): Promise<void> {

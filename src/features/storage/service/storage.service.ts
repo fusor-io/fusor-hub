@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/shared/services/database/service/database.service';
-import { LoggingType } from 'src/shared/services/database/type';
+import { LoggingType, AggregateView } from 'src/shared/services/database/type';
 import { ParamsPayloadDto } from '../dto/post-batch-payload.dto';
 import { AggregateResults } from '../dto/get-aggregate-result.dto';
 import { sanitizeName } from 'src/shared/utils/sanitizer';
@@ -62,6 +62,13 @@ export class StorageService {
     return results;
   }
 
+  async getAggregateView(nodeId: string, paramId: string): Promise<AggregateView[]> {
+    const start = 1589058000;
+    const end = 1589058660;
+    const windowSize = 60;
+    return this._databaseService.aggregateParam(nodeId, paramId, start, end, windowSize);
+  }
+
   flatten(values: AggregateResults): string {
     const results = [];
     Object.keys(values).forEach(nodeId =>
@@ -70,6 +77,13 @@ export class StorageService {
       ),
     );
     return results.join('\n');
+  }
+
+  async dump(): Promise<void> {
+    for (let i = 0; i < 100000; i++) {
+      await this._logParam('test', 'test', Math.random() * 1000);
+      // await new Promise(resolve => setTimeout(resolve, 5));
+    }
   }
 
   private async _logParam(nodeId: string, paramId: string, value: number): Promise<void> {
