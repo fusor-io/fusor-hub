@@ -1,6 +1,6 @@
 import { Module, OnModuleInit } from '@nestjs/common';
-import { DatabaseService } from './service/database.service';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseService } from './service/database.service';
 
 @Module({
   imports: [ConfigModule],

@@ -1,6 +1,6 @@
-import { IsNumber, IsEnum, IsOptional, IsArray, IsString, IsPositive } from 'class-validator';
+import { IsNumber, IsEnum, IsOptional, IsArray, IsPositive } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { AggregateViewGrouping, AggregateViewValue } from 'src/shared/services/database/type';
+import { AggregateViewGrouping, AggregateViewValue } from 'src/shared/services/aggregates/type';
 
 export class GetAggregateViewQueryDto {
   @IsEnum(AggregateViewGrouping)

@@ -1,21 +1,25 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DatabaseService } from 'src/shared/services/database/service/database.service';
-import { LoggingType, AggregateView } from 'src/shared/services/database/type';
+
 import { sanitizeName } from 'src/shared/utils/sanitizer';
+import { ParamsService } from 'src/shared/services/params/service/params.service';
+import { LoggingType } from 'src/shared/services/params/type';
+import { AggregatesService } from 'src/shared/services/aggregates/service/aggregates.service';
+import { AggregateView } from 'src/shared/services/aggregates/type';
+
 import { GetAggregateViewQueryDto, AggregateResults, ParamsPayloadDto } from '../dto';
 
 @Injectable()
 export class StorageService {
   private readonly _logger = new Logger(this.constructor.name);
 
-  constructor(private readonly _databaseService: DatabaseService) {}
+  constructor(
+    private readonly _paramsService: ParamsService,
+    private readonly _aggregatesService: AggregatesService,
+  ) {}
 
   public async getParam(nodeId: string, paramId: string): Promise<number> {
     try {
-      return await this._databaseService.readParamValue(
-        sanitizeName(nodeId),
-        sanitizeName(paramId),
-      );
+      return await this._paramsService.readParamValue(sanitizeName(nodeId), sanitizeName(paramId));
     } catch (error) {
       this._logger.error(`Failed reading param ${nodeId}:${paramId}`, error?.message);
       return undefined;
@@ -26,7 +30,7 @@ export class StorageService {
     const node = sanitizeName(nodeId);
     const param = sanitizeName(paramId);
     try {
-      await this._databaseService.writeParamValue(node, param, value);
+      await this._paramsService.writeParamValue(node, param, value);
       this._logParam(node, param, value); // don't wait
     } catch (error) {
       this._logger.error(`Failed storing ${nodeId}:${paramId}`, error?.message);
@@ -66,7 +70,7 @@ export class StorageService {
     paramId: string,
     query: GetAggregateViewQueryDto,
   ): Promise<AggregateView[]> {
-    return this._databaseService.aggregateParam(
+    return this._aggregatesService.aggregateParam(
       nodeId,
       paramId,
       query.start,
@@ -95,9 +99,9 @@ export class StorageService {
 
   private async _logParam(nodeId: string, paramId: string, value: number): Promise<void> {
     try {
-      const loggingType = await this._databaseService.getLoggingType(nodeId, paramId);
+      const loggingType = await this._paramsService.getLoggingType(nodeId, paramId);
       if (loggingType === LoggingType.no) return;
-      await this._databaseService.logParamValue(nodeId, paramId, value, loggingType);
+      await this._paramsService.logParamValue(nodeId, paramId, value, loggingType);
     } catch (error) {
       this._logger.error(`Failed storing ${paramId}`, error?.message);
     }
