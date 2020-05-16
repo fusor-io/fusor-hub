@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
+import { ParamsModule } from 'src/shared/services/params/params.module';
+import { DatabaseModule } from '../database/database.module';
 import { AggregatesService } from './service/aggregates.service';
-import { DatabaseService } from '../database/service/database.service';
-import { ParamsService } from '../params/service/params.service';
 
 @Module({
-  imports: [DatabaseService, ParamsService],
+  imports: [DatabaseModule, ParamsModule],
   providers: [AggregatesService],
   exports: [AggregatesService],
 })
