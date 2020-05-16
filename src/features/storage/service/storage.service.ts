@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/shared/services/database/service/database.service';
 import { LoggingType, AggregateView } from 'src/shared/services/database/type';
-import { ParamsPayloadDto } from '../dto/post-batch-payload.dto';
-import { AggregateResults } from '../dto/get-aggregate-result.dto';
 import { sanitizeName } from 'src/shared/utils/sanitizer';
+import { GetAggregateViewQueryDto, AggregateResults, ParamsPayloadDto } from '../dto';
 
 @Injectable()
 export class StorageService {
@@ -62,14 +61,22 @@ export class StorageService {
     return results;
   }
 
-  async getAggregateView(nodeId: string, paramId: string): Promise<AggregateView[]> {
-    const start = 1589058000;
-    const end = 1589058660;
-    const windowSize = 60;
-    return this._databaseService.aggregateParam(nodeId, paramId, start, end, windowSize);
+  async getAggregateView(
+    nodeId: string,
+    paramId: string,
+    query: GetAggregateViewQueryDto,
+  ): Promise<AggregateView[]> {
+    return this._databaseService.aggregateParam(
+      nodeId,
+      paramId,
+      query.start,
+      query.end,
+      query.groupBy,
+      query.aggregates,
+    );
   }
 
-  flatten(values: AggregateResults): string {
+  flattenObject(values: AggregateResults): string {
     const results = [];
     Object.keys(values).forEach(nodeId =>
       Object.keys(values[nodeId]).forEach(paramId =>

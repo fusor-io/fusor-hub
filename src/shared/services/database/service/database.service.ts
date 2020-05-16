@@ -1,10 +1,10 @@
-import { createPool, createConnection, Pool, PoolConnection, QueryOptions } from 'mysql';
+import { createPool, createConnection, Pool, PoolConnection, QueryOptions, escape } from 'mysql';
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Config } from 'src/shared/type';
-import { DEFAULT_MYSQL } from 'src/shared/const';
+import { DEFAULT_MYSQL, AGGREGATE_VIEW_GROUPING_MAP } from 'src/shared/const';
 import {
   LOG_TABLE_DOUBLE,
   PARAM_TABLE,
@@ -12,9 +12,21 @@ import {
   PARAM_TABLE_NAME,
   LOG_TABLE_INT,
 } from '../sql';
-import { NodeParam, LoggingType, NodeLogging, AggregateView } from '../type';
+import {
+  NodeParam,
+  LoggingType,
+  NodeLogging,
+  AggregateView,
+  AggregateViewGrouping,
+  AggregateViewValue,
+} from '../type';
 import { NodeParamsDto } from '../dto';
 import { sanitizeName } from 'src/shared/utils/sanitizer';
+import {
+  AGGREGATE_VALUE_MAP,
+  MINUTE_PRECISION_GROUPINGS,
+  MONTH_PRECISION_GROUPINGS,
+} from '../const';
 
 @Injectable()
 export class DatabaseService {
@@ -112,15 +124,45 @@ export class DatabaseService {
     paramId: string,
     start: number,
     end: number,
-    windowSize: number,
+    groupBy: AggregateViewGrouping,
+    aggregates: AggregateViewValue[],
   ): Promise<AggregateView[]> {
     const loggingType = await this.getLoggingType(nodeId, paramId);
     const tableName = this._generateTableName(nodeId, paramId, loggingType);
+    const endQuery = end ? ` AND UNIX_TIMESTAMP(ts) < ${escape(end)}` : '';
+    let frameQuery: string;
+    const aggregatesQuery =
+      (aggregates || [])
+        .map(aggregate => AGGREGATE_VALUE_MAP[aggregate])
+        .filter(aggregate => aggregate)
+        .join(', ') || AGGREGATE_VALUE_MAP[AggregateViewValue.average];
+
+    if (MINUTE_PRECISION_GROUPINGS.includes(groupBy)) {
+      const divider = AGGREGATE_VIEW_GROUPING_MAP[groupBy];
+      frameQuery = `FLOOR(UNIX_TIMESTAMP(ts)/${divider})*${divider}`;
+    } else if (MONTH_PRECISION_GROUPINGS.includes(groupBy)) {
+      switch (AGGREGATE_VIEW_GROUPING_MAP[groupBy]) {
+        case 1:
+          frameQuery = 'YEAR(ts)*12 + MONTH(ts)';
+          break;
+
+        case 3:
+          frameQuery = 'YEAR(ts)*4 + QUARTER(ts)';
+          break;
+
+        case 6:
+          frameQuery = 'YEAR(ts)*2 + FLOOR(QUARTER(ts)/2)';
+          break;
+      }
+    } else {
+      frameQuery = 'YEAR(ts)';
+    }
+
     return this.query<AggregateView>({
-      sql: `SELECT FLOOR(UNIX_TIMESTAMP(ts)/?)*? AS frame, AVG(value) as avg FROM ??
-            WHERE UNIX_TIMESTAMP(ts) >= ? AND UNIX_TIMESTAMP(ts) < ?
-            GROUP BY frame LIMIT 100`,
-      values: [windowSize, windowSize, tableName, start, end],
+      sql: `SELECT ${frameQuery} AS frame, ${aggregatesQuery} FROM ??
+           WHERE UNIX_TIMESTAMP(ts) >= ? ${endQuery}
+           GROUP BY frame LIMIT 100`,
+      values: [tableName, start, end],
     });
   }
 

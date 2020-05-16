@@ -1,28 +1,23 @@
-import { IsNumber, IsEnum, IsOptional, IsArray, IsString } from 'class-validator';
+import { IsNumber, IsEnum, IsOptional, IsArray, IsString, IsPositive } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { AggregateViewGrouping } from '../type';
-import { AggregateViewValue } from '../type/aggregate-view-value.type';
+import { AggregateViewGrouping, AggregateViewValue } from 'src/shared/services/database/type';
 
 export class GetAggregateViewQueryDto {
-  @IsString()
-  node: string;
-
-  @IsString()
-  param: string;
-
   @IsEnum(AggregateViewGrouping)
   groupBy: AggregateViewGrouping;
 
   @IsNumber()
+  @IsPositive()
   @Type(() => String)
   @Transform((value: string) => parseInt(value))
   start: number; // unix timestamp (GMT 0)
 
   @IsOptional()
   @IsNumber()
+  @IsPositive()
   @Type(() => String)
   @Transform((value: string) => parseInt(value))
-  end?: number; // if no end specified, current time is used for window end
+  end?: number;
 
   @IsOptional()
   @IsArray()
