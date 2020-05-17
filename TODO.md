@@ -31,7 +31,7 @@ IOT Gateway Server, - alfa
 - collects data from IOT nodes over non secure protocols +
 - saves data to logs +
 - provides aggregations service +
-- provides repository for IOT node StateMachines
+- provides repository for IOT node StateMachines +
 - pushes data to external service (eg. FireBase), using secure protocols
 - pulls configurations from external service (eg. FireBase)
 - serves as a gateway of MQTT (emits received data, collects and logs subscribed topics)

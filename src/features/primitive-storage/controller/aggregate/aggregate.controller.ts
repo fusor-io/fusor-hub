@@ -1,5 +1,5 @@
 import { Controller, Get, Query, Headers, Param, Res } from '@nestjs/common';
-import * as msgpack from 'msgpack-lite';
+import * as MessagePack from 'msgpack-lite';
 import { StorageService } from '../../service/storage.service';
 import { GetAggregateViewQueryDto } from '../../dto/get-aggregate-view-query.dto';
 import { GetParamParamsDto } from '../../dto';
@@ -21,7 +21,7 @@ export class AggregateController {
         return response.send(this._storageService.flattenObject(results));
       case 'application/msgpack':
         response.setHeader('Content-type', accept);
-        return response.send(msgpack.encode(results));
+        return response.send(MessagePack.encode(results));
       default:
         return response.send(results);
     }
@@ -42,7 +42,7 @@ export class AggregateController {
     switch (accept) {
       case 'application/msgpack':
         response.setHeader('Content-type', accept);
-        return response.send(msgpack.encode(results));
+        return response.send(MessagePack.encode(results));
       default:
         return response.send(results);
     }

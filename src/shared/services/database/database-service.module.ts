@@ -7,7 +7,7 @@ import { DatabaseService } from './service/database.service';
   providers: [DatabaseService],
   exports: [DatabaseService],
 })
-export class DatabaseModule implements OnModuleInit {
+export class DatabaseServiceModule implements OnModuleInit {
   constructor(private readonly _mySqlService: DatabaseService) {}
 
   onModuleInit() {

@@ -51,7 +51,12 @@ export class DatabaseService {
   async createTableIfNotExists(query: string, tableName: string): Promise<void> {
     if (this._tableCache[tableName]) return;
 
-    await this.query({ sql: query, values: [tableName] });
+    try {
+      await this.query({ sql: query, values: [tableName] });
+    } catch (error) {
+      this._logger.error(`Failed creating table ${tableName}`, error?.message);
+      throw error;
+    }
 
     this._tableCache[tableName] = true;
   }

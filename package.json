@@ -29,6 +29,7 @@
     "class-transformer": "^0.2.3",
     "class-validator": "^0.12.2",
     "crypto-random-string": "^3.2.0",
+    "hide-powered-by": "^1.1.0",
     "msgpack-lite": "^0.1.26",
     "mysql": "^2.18.1",
     "reflect-metadata": "^0.1.13",
