@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { sanitizeName } from 'src/shared/utils/sanitizer';
+import { sanitizeName } from 'src/shared/utils';
 import { DatabaseService } from '../../database/service/database.service';
 import { LoggingType, NodeLogging, NodeParam } from '../type';
 import {

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { sanitizeName } from 'src/shared/utils/sanitizer';
+import { sanitizeName } from 'src/shared/utils';
 import { ParamsService } from 'src/shared/services/params/service/params.service';
 import { LoggingType } from 'src/shared/services/params/type';
 import { AggregatesService } from 'src/shared/services/aggregates/service/aggregates.service';

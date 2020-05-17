@@ -36,6 +36,10 @@ IOT Gateway Server, - alfa
 - pulls configurations from external service (eg. FireBase)
 - serves as a gateway of MQTT (emits received data, collects and logs subscribed topics)
 
+IOT Gateway Admin App
+
+- provides UI for controlling IOT Gateway and all connected nodes
+
 IOT Gateway Client
 
 - library for creating extensions to IOT Gateway
@@ -48,7 +52,7 @@ HTTP Collector (uses IOT Gateway Client)
 - extractors: CSS, XPATH selectors from HTML
 - transformer: JSONata queries (mainly for handling API results)
 
-IOT Control App - old version, needs upgrade
+IOT User App - old version, needs upgrade
 
 - mobile app for managing, monitoring all Nodes
 - reads data from FireBase

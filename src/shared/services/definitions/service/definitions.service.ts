@@ -1,6 +1,8 @@
-import { DatabaseService } from './../../database/service/database.service';
+import { plainToClass } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
+import { DatabaseService } from '../../database/service/database.service';
 import { DEFINITIONS_TABLE, DEFINITIONS_TABLE_NAME } from '../sql';
+import { DefinitionQueryResultDto } from '../dto';
 import { DefinitionQueryResult } from '../type';
 
 @Injectable()
@@ -12,16 +14,18 @@ export class DefinitionsService {
 
     const json = JSON.stringify(definition);
     await this._databaseService.query({
-      sql: `INSERT INTO ?? (\`node\`, \`definition\`) VALUES(?,?) ON DUPLICATE KEY UPDATE \`definition\`=?`,
+      sql: `INSERT INTO ?? (\`node\`, \`definition\`) VALUES(?,?) 
+            ON DUPLICATE KEY UPDATE \`definition\`=?, \`version\`=\`version\`+1`,
       values: [DEFINITIONS_TABLE_NAME, nodeId, json, json],
     });
   }
 
-  async readDefinition(nodeId: string): Promise<object> {
-    const results = await this._databaseService.query<DefinitionQueryResult>({
-      sql: `SELECT \`definition\` FROM ?? WHERE \`node\`=? LIMIT 1`,
+  async readDefinition(nodeId: string): Promise<DefinitionQueryResult> {
+    const results = await this._databaseService.query<DefinitionQueryResultDto>({
+      sql: `SELECT \`definition\`, UNIX_TIMESTAMP(\`ts\`) as ts FROM ?? WHERE \`node\`=? LIMIT 1`,
       values: [DEFINITIONS_TABLE_NAME, nodeId],
     });
-    return results && results[0]?.definition && JSON.parse(results[0].definition);
+    const definitions = plainToClass(DefinitionQueryResultDto, results);
+    return definitions && definitions[0] && definitions[0].toModel();
   }
 }

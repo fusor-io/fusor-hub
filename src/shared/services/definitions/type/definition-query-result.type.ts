@@ -1,3 +1,4 @@
 export interface DefinitionQueryResult {
-  definition: string;
+  definition: object;
+  updatedAt: number;
 }
