@@ -11,11 +11,11 @@ StateMachine (C++ Arduino library) - v1.0
 
 - JSON based configuration to run State Machine on IOT node (eg. ESP series)
 
-IOT Wifi Node, Plugin for StateMachine (C++ Arduino library)
+IOT Node Connector, Plugin for StateMachine (C++ Arduino library)
 
 - provides connectivity to IOT Gateway
 
-IOT Node Configurator (C++ Arduino library)
+IOT Node Configurator (C++ Arduino library) - v1.0
 
 - provides basic web server for Node configuration over browser (wifi settings, etc.)
 

@@ -29,9 +29,9 @@ export class DefinitionsController {
       return response.sendStatus(HttpStatus.NOT_FOUND);
     }
 
-    const since = dateFromHttpFormat(ifModifiedSince);
-    if (since >= result.updatedAt) {
-      return response.sendStatus(HttpStatus.NOT_MODIFIED);
+    if (ifModifiedSince) {
+      const since = dateFromHttpFormat(ifModifiedSince);
+      if (since >= result.updatedAt) return response.sendStatus(HttpStatus.NOT_MODIFIED);
     }
 
     response.setHeader('Last-Modified', dateToHttpFormat(result.updatedAt));
