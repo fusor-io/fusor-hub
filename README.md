@@ -1,8 +1,13 @@
 ## Installation
 
 ```bash
-$ npm install
+$ npm i
+$ npm i -g pm2
 ```
+
+## Before running app
+
+Rename .env.default to .env and update settings
 
 ## Running the app
 

@@ -1,4 +1,6 @@
-import { Module } from '@nestjs/common';
+import { NodeController } from './features/primitive-storage/controller/node/node.controller';
+import { MsgPackMiddleware } from './shared/middleware/msg-pack-middleware/msg-pack-middleware';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,4 +12,8 @@ import { DefinitionsModule } from './features/definitions/definitions.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(MsgPackMiddleware).forRoutes(NodeController);
+  }
+}
