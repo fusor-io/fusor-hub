@@ -1,8 +1,8 @@
 version: '3'
 services:
   iotdb:
-    image: linuxserver/mariadb
-    container_name: mariadb
+    image: linuxserver/mariadb:latest
+    container_name: iotdb
     restart: always
     ports:
       - 3306:3306
