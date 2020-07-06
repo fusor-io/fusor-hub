@@ -5,4 +5,6 @@ export enum Config {
   mySqlUser = 'MYSQL_USER',
   mySqlPassword = 'MYSQL_PASSWORD',
   mySqlDb = 'MYSQL_DB',
+  firebaseDb = 'FIREBASE_DB',
+  firebaseDbPathVar = 'FIREBASE_DB_PATH_VAR',
 }
