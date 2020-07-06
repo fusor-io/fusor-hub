@@ -7,6 +7,8 @@ import { AggregatesService } from 'src/shared/services/aggregates/service/aggreg
 import { AggregateViewGrouping } from 'src/shared/services/aggregates/type';
 import { ExportType } from 'src/shared/services/params/type';
 
+// @see https://www.npmjs.com/package/node-schedule
+
 @Injectable()
 export class SchedulerService {
   private readonly _logger = new Logger(this.constructor.name);
