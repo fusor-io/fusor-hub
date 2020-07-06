@@ -9,5 +9,10 @@ module.exports = {
 		  name: 'server',
 		  script: 'npm start'
 	  },
+	  {
+		  name: 'pi-monitor',
+		  cwd: './bin',
+		  script: './rp-temp.sh'
+	  }
   ]
 };
