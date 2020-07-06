@@ -92,13 +92,13 @@ export class SchedulerService {
   private _day10() {
     const endTime = Date.now();
     const startTime = endTime - 10 * 24 * 60 * 60 * 1000;
-    this._buildView(startTime, endTime, ExportType.week1, AggregateViewGrouping.by6Hours);
+    this._buildView(startTime, endTime, ExportType.day10, AggregateViewGrouping.by6Hours);
   }
 
   private _month1() {
     const endTime = Date.now();
     const startTime = endTime - 30 * 24 * 60 * 60 * 1000;
-    this._buildView(startTime, endTime, ExportType.week1, AggregateViewGrouping.by12Hours);
+    this._buildView(startTime, endTime, ExportType.month1, AggregateViewGrouping.by12Hours);
   }
 
   private async _buildView(
