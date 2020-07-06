@@ -1,5 +1,4 @@
 export interface NodeParam {
+  node: string;
   param: string;
-  value: number;
-  ts: number;
 }

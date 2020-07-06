@@ -1,0 +1,15 @@
+export enum ExportType {
+  no = 'no',
+  value = 'value',
+  min15 = '15min',
+  min30 = '30min',
+  hour1 = '1hour',
+  hour2 = '2hours',
+  day1 = '1day',
+  day2 = '2days',
+  week1 = '1week',
+  day10 = '10days',
+  month1 = '1month',
+  month3 = '3months',
+  year1 = '1year',
+}

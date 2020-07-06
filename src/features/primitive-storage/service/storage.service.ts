@@ -34,7 +34,7 @@ export class StorageService {
     try {
       await this._paramsService.writeParamValue(node, param, value);
       this._logParam(node, param, value); // don't wait
-      this._firebaseService.updateVar(`${nodeId}_${paramId}`, value);
+      this._firebaseService.updateVar(`${node}_${param}`, value);
     } catch (error) {
       this._logger.error(`Failed storing ${nodeId}:${paramId}`, error?.message);
     }

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { sanitizeName } from 'src/shared/utils';
-import { DatabaseService } from '../../database/service/database.service';
-import { LoggingType, NodeLogging, NodeParam } from '../type';
+import { DatabaseService } from 'src/shared/services/database/service/database.service';
+import { ExportType, NodeParam } from 'src/shared/services/params/type';
+import { LoggingType, NodeLogging, NodeParamValue } from '../type';
 import {
   LOG_TABLE_INT,
   LOG_TABLE_DOUBLE,
@@ -47,8 +48,16 @@ export class ParamsService {
     return (results && results[0].logging) || LoggingType.no;
   }
 
-  async readParamValue(nodeId: string, paramId: string): Promise<number> {
+  async getExports(exportType: ExportType): Promise<NodeParam[]> {
     const results = await this._databaseService.query<NodeParam>({
+      sql: `SELECT \`node\`,\`param\` FROM ?? WHERE \`export\`=?`,
+      values: [PARAM_TABLE_NAME, exportType],
+    });
+    return results || [];
+  }
+
+  async readParamValue(nodeId: string, paramId: string): Promise<number> {
+    const results = await this._databaseService.query<NodeParamValue>({
       sql: `SELECT \`value\` FROM ?? WHERE \`node\`=? AND \`param\`=? LIMIT 1`,
       values: [PARAM_TABLE_NAME, nodeId, paramId],
     });

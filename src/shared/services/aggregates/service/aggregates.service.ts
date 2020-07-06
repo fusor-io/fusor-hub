@@ -62,7 +62,7 @@ export class AggregatesService {
       sql: `SELECT ${frameQuery} AS frame, ${aggregatesQuery} FROM ??
            WHERE UNIX_TIMESTAMP(ts) >= ? ${endQuery}
            GROUP BY frame LIMIT 100`,
-      values: [tableName, start, end],
+      values: [tableName, start],
     });
   }
 }

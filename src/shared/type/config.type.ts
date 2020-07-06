@@ -7,4 +7,5 @@ export enum Config {
   mySqlDb = 'MYSQL_DB',
   firebaseDb = 'FIREBASE_DB',
   firebaseDbPathVar = 'FIREBASE_DB_PATH_VAR',
+  firebaseDbPathView = 'FIREBASE_DB_PATH_VIEW',
 }

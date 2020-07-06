@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS ?? (
     param CHAR(${LIMIT_MAX_SENSOR_ID_LENGTH}),
     value DOUBLE,
     logging ENUM('no','double','int') NOT NULL DEFAULT 'no',
+    export ENUM('no','value','15min','30min','1hour','2hours','1day','2days','1week','10days','1month','3months','1year') NOT NULL DEFAULT 'no',
     ts TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (node, param)
 );`;

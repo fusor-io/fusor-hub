@@ -1,5 +1,5 @@
 export interface AggregateView {
-  dt: number;
+  frame: number;
   min?: number;
   max?: number;
   avg?: number;
