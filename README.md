@@ -7,7 +7,10 @@ $ npm i -g pm2
 
 ## Before running app
 
-Rename .env.default to .env and update settings
+1. Rename .env.default to .env and update settings if needed
+
+2. Register for Firebase and get configuration .json file, see: https://firebase.google.com/docs/admin/setup
+   Configuration file should be save as ./firebase-config.json in project root folder
 
 ## Running the app
 
