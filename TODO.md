@@ -9,15 +9,15 @@
 
 StateMachine (C++ Arduino library) - v1.0
 
-- JSON based configuration to run State Machine on IOT node (eg. ESP series)
+- JSON based configuration to run State Machine on IOT node (eg. ESP series) +
 
 IOT Node Connector (C++ Arduino library) - v1.0
 
-- provides connectivity to IOT Gateway
+- provides connectivity to IOT Gateway +
 
 IOT Node Configurator (C++ Arduino library) - v1.0
 
-- provides basic web server for Node configuration over browser (wifi settings, etc.)
+- provides basic web server for Node configuration over browser (wifi settings, etc.) +
 
 IOT Lora Node, Plugin for StateMachine (C++ Arduino library)
 
@@ -27,12 +27,12 @@ IOT Lora Node, Plugin for StateMachine (C++ Arduino library)
 
 IOT Gateway Server, - v1.0
 
-- runs in a local network, preferably on something small, like Pi
+- runs in a local network, preferably on something small, like Pi +
 - collects data from IOT nodes over non secure protocols +
 - saves data to logs +
 - provides aggregations service +
 - provides repository for IOT node StateMachines +
-- pushes data to external service (eg. FireBase), using secure protocols
+- pushes data to external service (eg. FireBase), using secure protocols +
 - pulls configurations from external service (eg. FireBase)
 - serves as a gateway of MQTT (emits received data, collects and logs subscribed topics)
 
