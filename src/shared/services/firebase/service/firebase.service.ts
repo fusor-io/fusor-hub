@@ -16,11 +16,10 @@ export class FirebaseService {
     if (this._loadConfig()) this._initService();
   }
 
-  public updateVar(varName: string, value: number): void {
+  public async updateVar(varName: string, value: number): Promise<void> {
     if (!this.isAvailable) return;
-
     try {
-      this._varReference.child(varName).set(value);
+      await this._varReference.child(varName).set(value);
     } catch (error) {
       this._logger.error(`Failed updating FireBase: ${varName}=${value}`, error);
     }
@@ -32,23 +31,30 @@ export class FirebaseService {
 
   private _loadConfig(): boolean {
     try {
+      this._logger.log("Loading Firebase config...");
       const config = fs.readFileSync('firebase-config.json', 'utf8');
       this._config = JSON.parse(config);
+      this._logger.log("...config loaded");
       return true;
     } catch (error) {
+      this._logger.error("...failed loading config", error);
       return false;
     }
   }
 
   private _initService(): void {
+    const dbUrl = this._configService.get<string>(Config.firebaseDb);
+    const dbPath = this._configService.get<string>(Config.firebaseDbPathVar) || 'var';
+    this._logger.log(`Connecting to database ${dbUrl}:${dbPath}`);
+
     fireBase.initializeApp({
       credential: fireBase.credential.cert(this._config),
-      databaseURL: this._configService.get<string>(Config.firebaseDb),
+      databaseURL: dbUrl,
     });
 
     this._varReference = fireBase
       .database()
       .ref()
-      .child(this._configService.get<string>(Config.firebaseDbPathVar) || 'var');
+      .child(dbPath);
   }
 }
