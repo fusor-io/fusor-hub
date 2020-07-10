@@ -28,4 +28,13 @@ export class DefinitionsService {
     const definitions = plainToClass(DefinitionQueryResultDto, results);
     return definitions && definitions[0] && definitions[0].toModel();
   }
+
+  async readDefinitions(type: string): Promise<DefinitionQueryResult[]> {
+    const results = await this._databaseService.query<DefinitionQueryResultDto>({
+      sql: `SELECT \`node\`, \`definition\`, UNIX_TIMESTAMP(\`ts\`) as ts FROM ?? WHERE \`type\`=? `,
+      values: [DEFINITIONS_TABLE_NAME, type],
+    });
+    const definitions = plainToClass(DefinitionQueryResultDto, results);
+    return definitions && definitions.map(definition => definition.toModel());
+  }
 }

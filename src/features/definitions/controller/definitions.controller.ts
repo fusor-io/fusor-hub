@@ -4,8 +4,9 @@ import * as MessagePack from 'msgpack-lite';
 import { Controller, Put, Param, Body, Get, Headers, Res } from '@nestjs/common';
 
 import { DefinitionsService } from '../../../shared/services/definitions/service/definitions.service';
-import { SingleDefinitionParamsDto } from '../dto';
+import { SingleDefinitionParamsDto, TypeDefinitionsParamsDto } from '../dto';
 import { dateFromHttpFormat, dateToHttpFormat } from 'src/shared/utils';
+import { DefinitionQueryResult } from 'src/shared/services/definitions/type';
 
 @Controller('definitions')
 export class DefinitionsController {
@@ -14,6 +15,11 @@ export class DefinitionsController {
   @Put(':type/:nodeId')
   putDefinition(@Param() param: SingleDefinitionParamsDto, @Body() body) {
     return this._definitionsService.saveDefinition(param.type, param.nodeId, body);
+  }
+
+  @Get(':type')
+  async getDefinitions(@Param() param: TypeDefinitionsParamsDto): Promise<DefinitionQueryResult[]> {
+    return this._definitionsService.readDefinitions(param.type);
   }
 
   @Get(':type/:nodeId')
