@@ -26,8 +26,8 @@ export class ParamsService {
     await this._databaseService.createTableIfNotExists(tableTemplate, tableName);
 
     await this._databaseService.query({
-      sql: `INSERT INTO ?? (\`value\`) VALUES(?);`,
-      values: [tableName, value],
+      sql: `INSERT INTO \`${tableName}\` (\`value\`) VALUES(?);`,
+      values: [value],
     });
   }
 

@@ -52,7 +52,7 @@ export class DatabaseService {
     if (this._tableCache[tableName]) return;
 
     try {
-      await this.query({ sql: query, values: [tableName] });
+      await this.query({ sql: query.replace('#', tableName) });
     } catch (error) {
       this._logger.error(
         `Failed creating table ${tableName}: ${JSON.stringify(query)}`,
