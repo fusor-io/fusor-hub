@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { sanitizeName } from 'src/shared/utils';
+import { cleanName } from 'src/shared/utils';
 import { ParamsService } from 'src/shared/services/params/service/params.service';
 import { LoggingType } from 'src/shared/services/params/type';
 import { FirebaseService } from 'src/shared/services/firebase/service/firebase.service';
@@ -21,7 +21,7 @@ export class StorageService {
 
   public async getParam(nodeId: string, paramId: string): Promise<number> {
     try {
-      return await this._paramsService.readParamValue(sanitizeName(nodeId), sanitizeName(paramId));
+      return await this._paramsService.readParamValue(cleanName(nodeId), cleanName(paramId));
     } catch (error) {
       this._logger.error(`Failed reading param ${nodeId}:${paramId}`, error?.message);
       return undefined;
@@ -29,12 +29,12 @@ export class StorageService {
   }
 
   public async saveParam(nodeId: string, paramId: string, value: number): Promise<void> {
-    const node = sanitizeName(nodeId);
-    const param = sanitizeName(paramId);
+    const node = cleanName(nodeId);
+    const param = cleanName(paramId);
     try {
       await this._paramsService.writeParamValue(node, param, value);
       this._logParam(node, param, value); // don't wait
-      this._firebaseService.updateVar(`${node}_${param}`, value);
+      this._firebaseService.updateVar(`${node}:${param}`, value);
     } catch (error) {
       this._logger.error(`Failed storing ${nodeId}:${paramId}`, error?.message);
     }
@@ -44,7 +44,7 @@ export class StorageService {
     if (payload && Object.keys(payload).length) {
       await Promise.all(
         Object.keys(payload).map(paramId =>
-          this.saveParam(sanitizeName(nodeId), sanitizeName(paramId), payload[paramId]),
+          this.saveParam(cleanName(nodeId), cleanName(paramId), payload[paramId]),
         ),
       );
     }
@@ -57,7 +57,7 @@ export class StorageService {
       query.map(async item => {
         const [nodeId, paramId] = item.split('.');
         if (paramId && nodeId) {
-          const value = await this.getParam(sanitizeName(nodeId), sanitizeName(paramId));
+          const value = await this.getParam(cleanName(nodeId), cleanName(paramId));
           if (value === undefined) return;
 
           if (!results[nodeId]) results[nodeId] = {};

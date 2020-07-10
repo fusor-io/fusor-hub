@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { sanitizeName } from 'src/shared/utils';
+import { cleanName } from 'src/shared/utils';
 import { DatabaseService } from 'src/shared/services/database/service/database.service';
 import { ExportType, NodeParam } from 'src/shared/services/params/type';
 import { LoggingType, NodeLogging, NodeParamValue } from '../type';
@@ -65,9 +65,9 @@ export class ParamsService {
   }
 
   generateTableName(nodeId: string, sensorId: string, loggingType: LoggingType): string {
-    const nodeIdCleaned = sanitizeName(nodeId);
-    const paramIdCleaned = sanitizeName(sensorId);
+    const nodeIdCleaned = cleanName(nodeId);
+    const paramIdCleaned = cleanName(sensorId);
     const dataType = loggingType === LoggingType.int ? 'i' : 'd';
-    return `${VALUE_TABLE_PREFIX}_${nodeIdCleaned}_${paramIdCleaned}_${dataType}`;
+    return `${VALUE_TABLE_PREFIX}:${nodeIdCleaned}:${paramIdCleaned}:${dataType}`;
   }
 }
