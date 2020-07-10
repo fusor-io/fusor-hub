@@ -54,7 +54,10 @@ export class DatabaseService {
     try {
       await this.query({ sql: query, values: [tableName] });
     } catch (error) {
-      this._logger.error(`Failed creating table ${tableName}`, error?.message);
+      this._logger.error(
+        `Failed creating table ${tableName}: ${JSON.stringify(query)}`,
+        error?.message,
+      );
       throw error;
     }
 
