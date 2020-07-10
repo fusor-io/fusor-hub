@@ -30,7 +30,7 @@ export class FirebaseService {
 
   public async updateView(viewType: ExportType, varName: string, value: object): Promise<void> {
     if (!this.isAvailable) return;
-    const path = cleanFbNodeName(`${varName}_${viewType}`);
+    const path = cleanFbNodeName(`${varName}:${viewType}`);
     try {
       await this._viewReference.child(path).set(value);
     } catch (error) {

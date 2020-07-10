@@ -134,7 +134,7 @@ export class SchedulerService {
 
         await this._firebaseService.updateView(
           exportType,
-          `${param.node}_${param.param}`,
+          `${param.node}:${param.param}`,
           exportValue,
         );
       } catch (error) {
