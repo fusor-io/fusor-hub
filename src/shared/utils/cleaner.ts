@@ -9,5 +9,6 @@ export function cleanFbNodeName(name: string): string {
   return (name || '')
     .trim()
     .toLowerCase()
-    .replace(/[\.\#\$\[\]]/g, '');
+    .replace(/[\.]/g, ':')
+    .replace(/[\#\$\[\]]/g, '_');
 }
