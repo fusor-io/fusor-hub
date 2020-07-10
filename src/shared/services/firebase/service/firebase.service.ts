@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as fireBase from 'firebase-admin';
+import { cleanFbNodeName } from 'src/shared/utils';
 
 // @see https://firebase.google.com/docs/admin/setup
 
@@ -21,7 +22,7 @@ export class FirebaseService {
   public async updateVar(varName: string, value: number): Promise<void> {
     if (!this.isAvailable) return;
     try {
-      await this._varReference.child(varName).set(value);
+      await this._varReference.child(cleanFbNodeName(varName)).set(value);
     } catch (error) {
       this._logger.error(`Failed updating FireBase: ${varName}=${value}`, error);
     }
@@ -29,10 +30,11 @@ export class FirebaseService {
 
   public async updateView(viewType: ExportType, varName: string, value: object): Promise<void> {
     if (!this.isAvailable) return;
+    const path = cleanFbNodeName(`${varName}_${viewType}`);
     try {
-      await this._viewReference.child(`${varName}_${viewType}`).set(value);
+      await this._viewReference.child(path).set(value);
     } catch (error) {
-      this._logger.error(`Failed updating FireBase: ${varName}_${viewType}`, error);
+      this._logger.error(`Failed updating FireBase: ${path}`, error);
     }
   }
 
