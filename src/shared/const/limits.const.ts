@@ -1,3 +1,4 @@
 export const LIMIT_MAX_NODE_ID_LENGTH = 24;
+export const LIMIT_MAX_DEFINITION_TYPE_LENGTH = 24;
 export const LIMIT_MAX_SENSOR_ID_LENGTH = 16;
 export const LIMIT_MAX_PARAM_ID_LENGTH = 16;

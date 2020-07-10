@@ -1,12 +1,13 @@
-import { LIMIT_MAX_NODE_ID_LENGTH } from 'src/shared/const';
+import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_DEFINITION_TYPE_LENGTH } from 'src/shared/const';
 
 export const DEFINITIONS_TABLE = `
 CREATE TABLE IF NOT EXISTS ?? (
+    type CHAR(${LIMIT_MAX_DEFINITION_TYPE_LENGTH}),
     node CHAR(${LIMIT_MAX_NODE_ID_LENGTH}),
     definition TEXT,
     version INT DEFAULT 0,
     ts TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (node)
+    PRIMARY KEY (type, node)
 );`;
 
 export const DEFINITIONS_TABLE_NAME = 'definitions';

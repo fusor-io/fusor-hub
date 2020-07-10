@@ -11,19 +11,19 @@ import { dateFromHttpFormat, dateToHttpFormat } from 'src/shared/utils';
 export class DefinitionsController {
   constructor(private readonly _definitionsService: DefinitionsService) {}
 
-  @Put(':nodeId')
+  @Put(':type/:nodeId')
   putDefinition(@Param() param: SingleDefinitionParamsDto, @Body() body) {
-    return this._definitionsService.saveDefinition(param.nodeId, body);
+    return this._definitionsService.saveDefinition(param.type, param.nodeId, body);
   }
 
-  @Get(':nodeId')
+  @Get(':type/:nodeId')
   async getDefinition(
     @Headers('accept') accept: string,
     @Headers('if-modified-since') ifModifiedSince: string,
     @Param() param: SingleDefinitionParamsDto,
     @Res() response: Response,
   ) {
-    const result = await this._definitionsService.readDefinition(param.nodeId);
+    const result = await this._definitionsService.readDefinition(param.type, param.nodeId);
 
     if (!result) {
       return response.sendStatus(HttpStatus.NOT_FOUND);
