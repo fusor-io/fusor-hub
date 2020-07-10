@@ -59,10 +59,10 @@ export class AggregatesService {
     }
 
     return this._databaseService.query<AggregateView>({
-      sql: `SELECT \`${frameQuery}\` AS frame, ${aggregatesQuery} FROM ??
+      sql: `SELECT ${frameQuery} AS frame, ${aggregatesQuery} FROM \`${tableName}\`
            WHERE UNIX_TIMESTAMP(ts) >= ? ${endQuery}
            GROUP BY frame LIMIT 100`,
-      values: [tableName, start],
+      values: [start],
     });
   }
 }
