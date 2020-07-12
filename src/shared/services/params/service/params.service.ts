@@ -42,7 +42,7 @@ export class ParamsService {
      * It stores data in SD card. These cards has limited re-write cycle number (eg. 10K times)
      * So we want to reduce number of times re-writing data to the same location.
      */
-    const key = `${paramId}@${nodeId}`;
+    const key = this._getCacheKey(nodeId, paramId);
     if (this._writeCache[key]) {
       const currentEntry = this._writeCache[key];
 
@@ -113,6 +113,11 @@ export class ParamsService {
   }
 
   async readParamValue(nodeId: string, paramId: string): Promise<number> {
+    const cachedItem = this._writeCache[this._getCacheKey(nodeId, paramId)];
+    if (cachedItem) {
+      return cachedItem.value;
+    }
+
     const results = await this._databaseService.query<NodeParamValue>({
       sql: `SELECT \`value\` FROM ?? WHERE \`node\`=? AND \`param\`=? LIMIT 1`,
       values: [PARAM_TABLE_NAME, nodeId, paramId],
@@ -125,5 +130,9 @@ export class ParamsService {
     const paramIdCleaned = cleanName(sensorId);
     const dataType = loggingType === LoggingType.int ? 'i' : 'd';
     return `${VALUE_TABLE_PREFIX}:${nodeIdCleaned}:${paramIdCleaned}:${dataType}`;
+  }
+
+  private _getCacheKey(nodeId: string, paramId: string): string {
+    return `${paramId}@${nodeId}`;
   }
 }
