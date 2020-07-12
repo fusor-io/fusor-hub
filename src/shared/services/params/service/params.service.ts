@@ -49,13 +49,13 @@ export class ParamsService {
       const now = Date.now();
       if (now - currentEntry.lastWriteTime > WRITE_DELAY) {
         await this.writeParamValue(nodeId, paramId, value);
+        currentEntry.lastWriteTime = now;
         currentEntry.isFlushed = true;
       } else {
         currentEntry.isFlushed = false;
         this._logger.log(`Delaying param update ${nodeId}:${paramId}=${value}`);
       }
 
-      currentEntry.lastWriteTime = now;
       currentEntry.value = value;
     } else {
       // write first time, to be sure we have entry for configuration
