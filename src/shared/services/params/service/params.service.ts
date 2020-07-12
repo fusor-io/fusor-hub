@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { cleanName } from 'src/shared/utils';
 import { DatabaseService } from 'src/shared/services/database/service/database.service';
-import { ExportType, NodeParam } from 'src/shared/services/params/type';
+import { ExportType, NodeParam, WriteCache } from 'src/shared/services/params/type';
 import { LoggingType, NodeLogging, NodeParamValue } from '../type';
 import {
   LOG_TABLE_INT,
@@ -10,10 +10,15 @@ import {
   PARAM_TABLE_NAME,
   VALUE_TABLE_PREFIX,
 } from '../sql';
+import { WRITE_DELAY } from '../const';
 
 @Injectable()
 export class ParamsService {
+  private readonly _logger = new Logger(this.constructor.name);
+
   constructor(private readonly _databaseService: DatabaseService) {}
+
+  private readonly _writeCache: WriteCache = {};
 
   async logParamValue(
     nodeId: string,
@@ -31,13 +36,64 @@ export class ParamsService {
     });
   }
 
-  async writeParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
-    await this._databaseService.createTableIfNotExists(PARAM_TABLE, PARAM_TABLE_NAME);
+  async delayedWriteParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
+    /*
+     * Motivation: default target platform for this server is Raspberry Pi.
+     * It stores data in SD card. These cards has limited re-write cycle number (eg. 10K times)
+     * So we want to reduce number of times re-writing data to the same location.
+     */
+    const key = `${paramId}@${nodeId}`;
+    if (this._writeCache[key]) {
+      const currentEntry = this._writeCache[key];
 
-    await this._databaseService.query({
-      sql: `INSERT INTO ?? (\`node\`, \`param\`, \`value\`) VALUES(?,?,?) ON DUPLICATE KEY UPDATE \`value\`=?`,
-      values: [PARAM_TABLE_NAME, nodeId, paramId, value, value],
-    });
+      const now = Date.now();
+      if (now - currentEntry.lastWriteTime > WRITE_DELAY) {
+        await this.writeParamValue(nodeId, paramId, value);
+        currentEntry.isFlushed = true;
+      } else {
+        currentEntry.isFlushed = false;
+        this._logger.log(`Delaying param update ${nodeId}:${paramId}=${value}`);
+      }
+
+      currentEntry.lastWriteTime = now;
+      currentEntry.value = value;
+    } else {
+      // write first time, to be sure we have entry for configuration
+      await this.writeParamValue(nodeId, paramId, value);
+      this._writeCache[key] = {
+        nodeId,
+        paramId,
+        value,
+        lastWriteTime: Date.now(),
+        isFlushed: true,
+      };
+    }
+  }
+
+  async writeParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
+    try {
+      await this._databaseService.createTableIfNotExists(PARAM_TABLE, PARAM_TABLE_NAME);
+
+      await this._databaseService.query({
+        sql: `INSERT INTO ?? (\`node\`, \`param\`, \`value\`) VALUES(?,?,?) ON DUPLICATE KEY UPDATE \`value\`=?`,
+        values: [PARAM_TABLE_NAME, nodeId, paramId, value, value],
+      });
+
+      this._logger.log(`Updated param ${nodeId}:${paramId}=${value}`);
+    } catch (error) {
+      this._logger.error(`Failed updating param ${nodeId}:${paramId}=${value}`);
+    }
+  }
+
+  async flushWriteCache(): Promise<void> {
+    this._logger.log('Flushing write cache...');
+    for (const key of Object.keys(this._writeCache)) {
+      const item = this._writeCache[key];
+      if (!item.isFlushed) {
+        await this.writeParamValue(item.nodeId, item.paramId, item.value);
+      }
+    }
+    this._logger.log('...write cache flushed');
   }
 
   async getLoggingType(nodeId: string, paramId: string): Promise<LoggingType> {

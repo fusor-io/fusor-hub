@@ -9,6 +9,7 @@ async function bootstrap() {
   app.use(hidePoweredBy());
   app.use(bodyParser.raw({ type: 'application/msgpack' }));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.enableShutdownHooks();
   await app.listen(3000);
 }
 bootstrap();

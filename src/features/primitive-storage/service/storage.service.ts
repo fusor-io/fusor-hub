@@ -32,7 +32,7 @@ export class StorageService {
     const node = cleanName(nodeId);
     const param = cleanName(paramId);
     try {
-      await this._paramsService.writeParamValue(node, param, value);
+      await this._paramsService.delayedWriteParamValue(node, param, value);
       this._logParam(node, param, value); // don't wait
       this._firebaseService.updateVar(`${node}:${param}`, value);
     } catch (error) {
