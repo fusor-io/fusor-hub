@@ -1,5 +1,10 @@
-import { Type, Transform } from 'class-transformer';
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsEnum } from 'class-validator';
+
+export enum FilterResultTypes {
+  default = 'default',
+  flat = 'flat',
+  odata = 'odata',
+}
 
 export class GetFilterQueryDto {
   @IsOptional()
@@ -11,8 +16,6 @@ export class GetFilterQueryDto {
   paramId?: string;
 
   @IsOptional()
-  @IsBoolean()
-  @Type(() => String)
-  @Transform((value: string) => value.toLowerCase() === 'true' || value === '1')
-  flat?: boolean;
+  @IsEnum(FilterResultTypes)
+  format?: FilterResultTypes;
 }

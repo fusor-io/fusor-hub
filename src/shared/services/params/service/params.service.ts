@@ -129,7 +129,7 @@ export class ParamsService {
     await this.flushWriteCache();
 
     const results = await this._databaseService.query<ParamEntry>({
-      sql: `SELECT \`node\`, \`param\`, \`value\` FROM ?? WHERE \`node\` like ? AND \`param\` like ?`,
+      sql: `SELECT \`node\`, \`param\`, \`value\`, UNIX_TIMESTAMP(\`ts\`) as \`ts\` FROM ?? WHERE \`node\` like ? AND \`param\` like ?`,
       values: [PARAM_TABLE_NAME, nodePattern || '%', paramPattern || '%'],
     });
 

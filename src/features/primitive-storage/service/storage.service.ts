@@ -12,8 +12,8 @@ import {
   AggregateResults,
   ParamsPayloadDto,
   GetFilterQueryResult,
-  GetFilterQueryResultItem,
   GetFilterQueryResultItemFlat,
+  FilterResultTypes,
 } from '../dto';
 
 @Injectable()
@@ -78,12 +78,27 @@ export class StorageService {
   async filter(
     nodePatter: string,
     paramPatter: string,
-    makeFlat = false,
+    format: FilterResultTypes,
   ): Promise<GetFilterQueryResult> {
     const results = await this._paramsService.filterParams(nodePatter, paramPatter);
-    return makeFlat
-      ? results.map(item => [item.node, item.param, item.value] as GetFilterQueryResultItemFlat)
-      : (results as GetFilterQueryResultItem[]);
+    switch (format) {
+      case FilterResultTypes.flat:
+        return results.map(
+          item => [item.node, item.param, item.value] as GetFilterQueryResultItemFlat,
+        );
+      case FilterResultTypes.odata:
+        return {
+          value: results.map(item => ({
+            '@odata.id': `${item.node}:${item.param}`,
+            '@odata.etag': `W/'${item.ts}'`,
+            node: item.node,
+            param: item.param,
+            value: item.value,
+          })),
+        };
+      default:
+        return results;
+    }
   }
 
   async getAggregateView(

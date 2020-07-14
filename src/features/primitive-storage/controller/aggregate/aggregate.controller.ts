@@ -2,7 +2,7 @@ import { Controller, Get, Query, Headers, Param, Res } from '@nestjs/common';
 import * as MessagePack from 'msgpack-lite';
 import { StorageService } from '../../service/storage.service';
 import { GetAggregateViewQueryDto } from '../../dto/get-aggregate-view-query.dto';
-import { GetParamParamsDto, GetFilterQueryDto, GetFilterQueryResult } from '../../dto';
+import { GetParamParamsDto, GetFilterQueryDto, FilterResultTypes } from '../../dto';
 import { Response } from 'express';
 
 @Controller('aggregate')
@@ -28,8 +28,20 @@ export class AggregateController {
   }
 
   @Get('filter')
-  async filterParams(@Query() query: GetFilterQueryDto): Promise<GetFilterQueryResult> {
-    return this._storageService.filter(query.nodeId, query.paramId, query.flat || false);
+  async filterParams(@Query() query: GetFilterQueryDto, @Res() response: Response) {
+    const results = await this._storageService.filter(
+      query.nodeId,
+      query.paramId,
+      query.format || FilterResultTypes.default,
+    );
+
+    if (query.format === FilterResultTypes.odata) {
+      response.setHeader('Content-type', 'application/json; odata.metadata=minimal');
+      response.setHeader('OData-Version', '4.0');
+      return response.send(results);
+    } else {
+      return response.send(results);
+    }
   }
 
   @Get(':nodeId/:paramId')
