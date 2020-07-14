@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { cleanName } from 'src/shared/utils';
 import { DatabaseService } from 'src/shared/services/database/service/database.service';
-import { ExportType, NodeParam, WriteCache } from 'src/shared/services/params/type';
+import { ExportType, NodeParam, WriteCache, ParamEntry } from 'src/shared/services/params/type';
 import { LoggingType, NodeLogging, NodeParamValue } from '../type';
 import {
   LOG_TABLE_INT,
@@ -123,6 +123,17 @@ export class ParamsService {
       values: [PARAM_TABLE_NAME, nodeId, paramId],
     });
     return results && results[0]?.value;
+  }
+
+  async filterParams(nodePattern: string, paramPattern: string): Promise<ParamEntry[]> {
+    await this.flushWriteCache();
+
+    const results = await this._databaseService.query<ParamEntry>({
+      sql: `SELECT \`node\`, \`param\`, \`value\` FROM ?? WHERE \`node\` like ? AND \`param\` like ?`,
+      values: [PARAM_TABLE_NAME, nodePattern || '%', paramPattern || '%'],
+    });
+
+    return results || [];
   }
 
   generateTableName(nodeId: string, sensorId: string, loggingType: LoggingType): string {

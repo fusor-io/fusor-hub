@@ -7,7 +7,14 @@ import { FirebaseService } from 'src/shared/services/firebase/service/firebase.s
 import { AggregatesService } from 'src/shared/services/aggregates/service/aggregates.service';
 import { AggregateView } from 'src/shared/services/aggregates/type';
 
-import { GetAggregateViewQueryDto, AggregateResults, ParamsPayloadDto } from '../dto';
+import {
+  GetAggregateViewQueryDto,
+  AggregateResults,
+  ParamsPayloadDto,
+  GetFilterQueryResult,
+  GetFilterQueryResultItem,
+  GetFilterQueryResultItemFlat,
+} from '../dto';
 
 @Injectable()
 export class StorageService {
@@ -66,6 +73,17 @@ export class StorageService {
       }),
     );
     return results;
+  }
+
+  async filter(
+    nodePatter: string,
+    paramPatter: string,
+    makeFlat = false,
+  ): Promise<GetFilterQueryResult> {
+    const results = await this._paramsService.filterParams(nodePatter, paramPatter);
+    return makeFlat
+      ? results.map(item => [item.node, item.param, item.value] as GetFilterQueryResultItemFlat)
+      : (results as GetFilterQueryResultItem[]);
   }
 
   async getAggregateView(
