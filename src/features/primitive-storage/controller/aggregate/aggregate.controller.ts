@@ -52,9 +52,4 @@ export class AggregateController {
         return response.send(results);
     }
   }
-
-  @Get('dump')
-  async dump() {
-    await this._storageService.dump();
-  }
 }

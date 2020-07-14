@@ -111,13 +111,6 @@ export class StorageService {
     return results.join('\n');
   }
 
-  async dump(): Promise<void> {
-    for (let i = 0; i < 100000; i++) {
-      await this._logParam('test', 'test', Math.random() * 1000);
-      // await new Promise(resolve => setTimeout(resolve, 5));
-    }
-  }
-
   private async _logParam(nodeId: string, paramId: string, value: number): Promise<void> {
     try {
       const loggingType = await this._paramsService.getLoggingType(nodeId, paramId);
