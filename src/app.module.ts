@@ -1,12 +1,14 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SchedulerModule } from './shared/services/scheduler/scheduler.module';
-import { NodeController } from './features/primitive-storage/controller/node/node.controller';
-import { MsgPackMiddleware } from './shared/middleware/msg-pack-middleware/msg-pack-middleware';
-import { PrimitiveStorageModule } from './features/primitive-storage/primitive-storage.module';
 import { DefinitionsModule } from './features/definitions/definitions.module';
+import { NodeController } from './features/primitive-storage/controller/node/node.controller';
+import { PrimitiveStorageModule } from './features/primitive-storage/primitive-storage.module';
+import { MsgPackMiddleware } from './shared/middleware/msg-pack-middleware/msg-pack-middleware';
+import { ExporterModule } from './shared/services/exporter/exporter.module';
+import { SchedulerModule } from './shared/services/scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { DefinitionsModule } from './features/definitions/definitions.module';
     PrimitiveStorageModule,
     DefinitionsModule,
     SchedulerModule,
+    ExporterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

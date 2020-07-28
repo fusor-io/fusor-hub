@@ -1,20 +1,20 @@
+import { Body, Controller, Get, Headers, Param, Put, Res } from '@nestjs/common';
 import { Response } from 'express';
 import * as HttpStatus from 'http-status-codes';
 import * as MessagePack from 'msgpack-lite';
-import { Controller, Put, Param, Body, Get, Headers, Res } from '@nestjs/common';
+import { DefinitionQueryResult } from 'src/shared/services/definitions/type';
+import { dateFromHttpFormat, dateToHttpFormat } from 'src/shared/utils';
 
 import { DefinitionsService } from '../../../shared/services/definitions/service/definitions.service';
 import { SingleDefinitionParamsDto, TypeDefinitionsParamsDto } from '../dto';
-import { dateFromHttpFormat, dateToHttpFormat } from 'src/shared/utils';
-import { DefinitionQueryResult } from 'src/shared/services/definitions/type';
 
 @Controller('definitions')
 export class DefinitionsController {
   constructor(private readonly _definitionsService: DefinitionsService) {}
 
-  @Put(':type/:nodeId')
-  putDefinition(@Param() param: SingleDefinitionParamsDto, @Body() body) {
-    return this._definitionsService.saveDefinition(param.type, param.nodeId, body);
+  @Put(':type/:key')
+  putNodeDefinition(@Param() param: SingleDefinitionParamsDto, @Body() body) {
+    return this._definitionsService.saveDefinition(param.type, param.key, body);
   }
 
   @Get(':type')
@@ -22,14 +22,14 @@ export class DefinitionsController {
     return this._definitionsService.readDefinitions(param.type);
   }
 
-  @Get(':type/:nodeId')
+  @Get(':type/:key')
   async getDefinition(
     @Headers('accept') accept: string,
     @Headers('if-modified-since') ifModifiedSince: string,
     @Param() param: SingleDefinitionParamsDto,
     @Res() response: Response,
   ) {
-    const result = await this._definitionsService.readDefinition(param.type, param.nodeId);
+    const result = await this._definitionsService.readDefinition(param.type, param.key);
 
     if (!result) {
       return response.sendStatus(HttpStatus.NOT_FOUND);

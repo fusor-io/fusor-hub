@@ -3,8 +3,8 @@ import { ParamsServiceModule } from 'src/shared/services/params/params-service.m
 import { AggregatesServiceModule } from 'src/shared/services/aggregates/aggregates-service.module';
 import { FirebaseModule } from 'src/shared/services/firebase/firebase.module';
 
-import { NodeController } from './controller/node/node.controller';
 import { StorageService } from './service/storage.service';
+import { NodeController } from './controller/node/node.controller';
 import { AggregateController } from './controller/aggregate/aggregate.controller';
 
 @Module({

@@ -76,11 +76,11 @@ export class StorageService {
   }
 
   async filter(
-    nodePatter: string,
-    paramPatter: string,
-    format: FilterResultTypes,
+    nodePattern: string,
+    paramPattern: string,
+    format: FilterResultTypes = FilterResultTypes.default,
   ): Promise<GetFilterQueryResult> {
-    const results = await this._paramsService.filterParams(nodePatter, paramPatter);
+    const results = await this._paramsService.filterParams(nodePattern, paramPattern);
     switch (format) {
       case FilterResultTypes.flat:
         return results.map(

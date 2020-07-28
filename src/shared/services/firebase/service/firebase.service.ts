@@ -1,22 +1,51 @@
-import { ExportType } from 'src/shared/services/params/type';
-import { Config } from 'src/shared/type';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
-import * as fs from 'fs';
 import * as fireBase from 'firebase-admin';
+import * as fs from 'fs';
+import { Config } from 'src/shared/type';
 import { cleanFbNodeName } from 'src/shared/utils';
+import { ExportType } from 'src/shared/services/params/type';
 
 // @see https://firebase.google.com/docs/admin/setup
+// @see https://firebase.google.com/docs/reference/js/firebase.database.Reference
 
 @Injectable()
 export class FirebaseService {
   private readonly _logger = new Logger(this.constructor.name);
   private _config: object;
+  private _dbReference: fireBase.database.Reference;
   private _varReference: fireBase.database.Reference;
   private _viewReference: fireBase.database.Reference;
 
+  private _defaultVarPath: string;
+  private _defaultViewPath: string;
+
   constructor(private readonly _configService: ConfigService) {
     if (this._loadConfig()) this._initService();
+  }
+
+  public async saveVar(
+    value: number | object,
+    path: string,
+    root = this._defaultVarPath,
+  ): Promise<void> {
+    if (!this.isAvailable) return;
+    const fullPath = cleanFbNodeName([root, path].filter(item => item).join('/'));
+    try {
+      await this._dbReference.child(fullPath).set(value);
+    } catch (error) {
+      this._logger.error(`Failed saving to FireBase: ${path}`, error);
+    }
+  }
+
+  public async saveView(value: object, path: string, root = this._defaultViewPath): Promise<void> {
+    if (!this.isAvailable) return;
+    const fullPath = cleanFbNodeName([root, path].filter(item => item).join('/'));
+    try {
+      await this._dbReference.child(fullPath).set(value);
+    } catch (error) {
+      this._logger.error(`Failed saving to FireBase: ${path}`, error);
+    }
   }
 
   public async updateVar(varName: string, value: number): Promise<void> {
@@ -57,24 +86,20 @@ export class FirebaseService {
 
   private _initService(): void {
     const dbUrl = this._configService.get<string>(Config.firebaseDb);
-    const varPath = this._configService.get<string>(Config.firebaseDbPathVar) || 'var';
-    const viewPath = this._configService.get<string>(Config.firebaseDbPathView) || 'view';
+    this._defaultVarPath = this._configService.get<string>(Config.firebaseDbPathVar) || 'var';
+    this._defaultViewPath = this._configService.get<string>(Config.firebaseDbPathView) || 'view';
 
-    this._logger.log(`Connecting to database ${dbUrl}:[${varPath},${viewPath}]`);
+    this._logger.log(
+      `Connecting to database ${dbUrl}:[${this._defaultVarPath},${this._defaultViewPath}]`,
+    );
 
     fireBase.initializeApp({
       credential: fireBase.credential.cert(this._config),
       databaseURL: dbUrl,
     });
 
-    this._varReference = fireBase
-      .database()
-      .ref()
-      .child(varPath);
-
-    this._viewReference = fireBase
-      .database()
-      .ref()
-      .child(viewPath);
+    this._dbReference = fireBase.database().ref();
+    this._varReference = this._dbReference.child(this._defaultVarPath);
+    this._viewReference = this._dbReference.child(this._defaultViewPath);
   }
 }

@@ -1,5 +1,5 @@
-export interface DefinitionQueryResult {
-  node?: string;
-  definition: object;
+export interface DefinitionQueryResult<T = object> {
+  key?: string;
+  definition: T;
   updatedAt: number;
 }

@@ -1,13 +1,13 @@
 import { DefinitionQueryResult } from '../type';
 
-export class DefinitionQueryResultDto {
-  node: string;
+export class DefinitionQueryResultDto<T> {
+  key: string;
   definition: string;
   ts: number;
-  toModel(): DefinitionQueryResult {
+  toModel(): DefinitionQueryResult<T> {
     return {
-      node: this.node,
-      definition: JSON.parse(this.definition),
+      key: this.key,
+      definition: JSON.parse(this.definition) as T,
       updatedAt: Math.round(this.ts) * 1000,
     };
   }

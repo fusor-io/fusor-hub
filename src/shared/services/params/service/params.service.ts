@@ -136,6 +136,17 @@ export class ParamsService {
     return results || [];
   }
 
+  async regexpParams(nodeMatch: string, paramMatch: string): Promise<ParamEntry[]> {
+    await this.flushWriteCache();
+
+    const results = await this._databaseService.query<ParamEntry>({
+      sql: `SELECT \`node\`, \`param\`, \`value\`, UNIX_TIMESTAMP(\`ts\`) as \`ts\` FROM ?? WHERE \`node\` regexp ? AND \`param\` regexp ?`,
+      values: [PARAM_TABLE_NAME, nodeMatch || '*.', paramMatch || '*.'],
+    });
+
+    return results || [];
+  }
+
   generateTableName(nodeId: string, sensorId: string, loggingType: LoggingType): string {
     const nodeIdCleaned = cleanName(nodeId);
     const paramIdCleaned = cleanName(sensorId);

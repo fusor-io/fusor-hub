@@ -1,10 +1,9 @@
-import { scheduleJob } from 'node-schedule';
 import { Injectable, Logger } from '@nestjs/common';
-import { FirebaseService } from 'src/shared/services/firebase/service/firebase.service';
-import { AggregateViewValue } from 'src/shared/services/aggregates/type';
-import { ParamsService } from 'src/shared/services/params/service/params.service';
+import { scheduleJob } from 'node-schedule';
 import { AggregatesService } from 'src/shared/services/aggregates/service/aggregates.service';
-import { AggregateViewGrouping } from 'src/shared/services/aggregates/type';
+import { AggregateViewGrouping, AggregateViewValue } from 'src/shared/services/aggregates/type';
+import { FirebaseService } from 'src/shared/services/firebase/service/firebase.service';
+import { ParamsService } from 'src/shared/services/params/service/params.service';
 import { ExportType } from 'src/shared/services/params/type';
 
 // @see https://www.npmjs.com/package/node-schedule
@@ -19,10 +18,10 @@ export class SchedulerService {
   ) {}
 
   public scheduleJobs(): void {
-    this._logger.log('Scheduling jobs...');
-    this._minuteJobs();
-    this._hourJobs();
-    this._logger.log('...jobs scheduled');
+    // this._logger.log('Scheduling jobs...');
+    // this._minuteJobs();
+    // this._hourJobs();
+    // this._logger.log('...jobs scheduled');
   }
 
   private _minuteJobs(): void {
