@@ -48,13 +48,17 @@ export class StorageService {
   }
 
   async saveBatch(nodeId: string, payload: ParamsPayloadDto): Promise<void> {
+    this._logger.log(`Saving batch ${nodeId}`);
+
     if (payload && Object.keys(payload).length) {
       await Promise.all(
         Object.keys(payload).map(paramId =>
-          this.saveParam(cleanName(nodeId), cleanName(paramId), payload[paramId]),
+          this.saveParam(nodeId, paramId, payload[paramId]),
         ),
       );
     }
+
+    this._logger.log(`Batch ${nodeId} saved`);
   }
 
   async getBatch(query: string[]): Promise<AggregateResults> {
