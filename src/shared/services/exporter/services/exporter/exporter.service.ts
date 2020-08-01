@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { DefinitionsService } from 'src/shared/services/definitions/service/definitions.service';
 import { ParamsService } from 'src/shared/services/params/service/params.service';
 
-import { DefinitionsService } from '../../../definitions/service/definitions.service';
 import { EXPORTER_DEFINITION_TYPE } from '../../const';
 import {
   ExporterConfigFirebase,
@@ -143,8 +143,10 @@ export class ExporterService {
             exporter?.output as ExporterConfigFirebase,
             output,
           );
+          return;
         }
         case ExporterTarget.googleSheet: {
+          return;
         }
         default:
           throw new Error(`Unsupported target ${target}`);

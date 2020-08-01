@@ -1,10 +1,10 @@
-import { ExporterModule } from '../exporter/exporter.module';
-import { Module, BeforeApplicationShutdown, forwardRef } from '@nestjs/common';
+import { BeforeApplicationShutdown, Module } from '@nestjs/common';
+
 import { DatabaseServiceModule } from '../database/database-service.module';
 import { ParamsService } from './service/params.service';
 
 @Module({
-  imports: [DatabaseServiceModule, forwardRef(() => ExporterModule)],
+  imports: [DatabaseServiceModule],
   providers: [ParamsService],
   exports: [ParamsService],
 })

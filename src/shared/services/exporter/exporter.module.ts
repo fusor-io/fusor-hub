@@ -1,9 +1,9 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { AggregatesServiceModule } from 'src/shared/services/aggregates/aggregates-service.module';
+import { DefinitionsServiceModule } from 'src/shared/services/definitions/definitions-service.module';
+import { FirebaseModule } from 'src/shared/services/firebase/firebase.module';
+import { ParamsServiceModule } from 'src/shared/services/params/params-service.module';
 
-import { ParamsServiceModule } from '../../services/params/params-service.module';
-import { AggregatesServiceModule } from '../aggregates/aggregates-service.module';
-import { DefinitionsServiceModule } from '../definitions/definitions-service.module';
-import { FirebaseModule } from '../firebase/firebase.module';
 import { ExportBrokerService } from './services/broker/broker.service';
 import { CollectorService } from './services/collector/collector.service';
 import { ExporterService } from './services/exporter/exporter.service';
@@ -15,7 +15,7 @@ import { GoogleSheetSaverService } from './services/google-sheet-saver/google-sh
     DefinitionsServiceModule,
     FirebaseModule,
     AggregatesServiceModule,
-    forwardRef(() => ParamsServiceModule),
+    ParamsServiceModule,
   ],
   providers: [
     ExportBrokerService,

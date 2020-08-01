@@ -1,16 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { cleanName } from 'src/shared/utils';
 import { DatabaseService } from 'src/shared/services/database/service/database.service';
-import { ExportType, NodeParam, WriteCache, ParamEntry } from 'src/shared/services/params/type';
-import { LoggingType, NodeLogging, NodeParamValue } from '../type';
-import {
-  LOG_TABLE_INT,
-  LOG_TABLE_DOUBLE,
-  PARAM_TABLE,
-  PARAM_TABLE_NAME,
-  VALUE_TABLE_PREFIX,
-} from '../sql';
+import { ExportType, NodeParam, ParamEntry, WriteCache } from 'src/shared/services/params/type';
+import { cleanName } from 'src/shared/utils';
+
 import { WRITE_DELAY } from '../const';
+import { LOG_TABLE_DOUBLE, LOG_TABLE_INT, PARAM_TABLE, PARAM_TABLE_NAME, VALUE_TABLE_PREFIX } from '../sql';
+import { LoggingType, NodeLogging, NodeParamValue, ParamWriteHookFn } from '../type';
 
 @Injectable()
 export class ParamsService {
@@ -19,6 +14,11 @@ export class ParamsService {
   constructor(private readonly _databaseService: DatabaseService) {}
 
   private readonly _writeCache: WriteCache = {};
+  private readonly _writeHooks: ParamWriteHookFn[] = [];
+
+  registerWriteHook(hook: ParamWriteHookFn): void {
+    this._writeHooks.push(hook);
+  }
 
   async logParamValue(
     nodeId: string,
@@ -36,19 +36,21 @@ export class ParamsService {
     });
   }
 
-  async delayedWriteParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
+  async writeParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
     /*
-     * Motivation: default target platform for this server is Raspberry Pi.
+     * Motivation for delayed write:
+     * Default target platform for this server is Raspberry Pi.
      * It stores data in SD card. These cards has limited re-write cycle number (eg. 10K times)
      * So we want to reduce number of times re-writing data to the same location.
      */
+
     const key = this._getCacheKey(nodeId, paramId);
     if (this._writeCache[key]) {
       const currentEntry = this._writeCache[key];
 
       const now = Date.now();
       if (now - currentEntry.lastWriteTime > WRITE_DELAY) {
-        await this.writeParamValue(nodeId, paramId, value);
+        await this._writeParamValue(nodeId, paramId, value);
         currentEntry.lastWriteTime = now;
         currentEntry.isFlushed = true;
       } else {
@@ -59,7 +61,7 @@ export class ParamsService {
       currentEntry.value = value;
     } else {
       // write first time, to be sure we have entry for configuration
-      await this.writeParamValue(nodeId, paramId, value);
+      await this._writeParamValue(nodeId, paramId, value);
       this._writeCache[key] = {
         nodeId,
         paramId,
@@ -68,9 +70,11 @@ export class ParamsService {
         isFlushed: true,
       };
     }
+
+    this._callWriteHooks(nodeId, paramId, value);
   }
 
-  async writeParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
+  private async _writeParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
     try {
       await this._databaseService.createTableIfNotExists(PARAM_TABLE, PARAM_TABLE_NAME);
 
@@ -90,7 +94,7 @@ export class ParamsService {
     for (const key of Object.keys(this._writeCache)) {
       const item = this._writeCache[key];
       if (!item.isFlushed) {
-        await this.writeParamValue(item.nodeId, item.paramId, item.value);
+        await this._writeParamValue(item.nodeId, item.paramId, item.value);
       }
     }
     this._logger.log('...write cache flushed');
@@ -156,5 +160,15 @@ export class ParamsService {
 
   private _getCacheKey(nodeId: string, paramId: string): string {
     return `${paramId}@${nodeId}`;
+  }
+
+  private async _callWriteHooks(nodeId: string, paramId: string, value: number): Promise<void> {
+    for (const hook of this._writeHooks) {
+      try {
+        await hook(nodeId, paramId, value);
+      } catch (error) {
+        this._logger.error(`Failed calling write hook (${nodeId}:${paramId}=${value})`, error);
+      }
+    }
   }
 }

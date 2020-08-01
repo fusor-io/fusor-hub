@@ -8,7 +8,7 @@ export class FirebaseSaverService {
   constructor(private readonly _firebaseService: FirebaseService) {}
 
   async save(node: string, param: string, config: ExporterConfigFirebase, value: CollectorResults) {
-    const path = config?.path || `${node}/${param}`;
+    const path = config?.path || `${node}:${param}`;
     return Array.isArray(value) ? this.saveMany(path, value) : this.saveOne(path, value);
   }
 

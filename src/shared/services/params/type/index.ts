@@ -5,3 +5,4 @@ export * from './node-param-value.type';
 export * from './export.type';
 export * from './write-cache.type';
 export * from './param-entry.type';
+export * from './param-write-hook-fn.type';

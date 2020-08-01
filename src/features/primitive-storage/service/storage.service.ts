@@ -1,19 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
-
-import { cleanName } from 'src/shared/utils';
-import { ParamsService } from 'src/shared/services/params/service/params.service';
-import { LoggingType } from 'src/shared/services/params/type';
-import { FirebaseService } from 'src/shared/services/firebase/service/firebase.service';
 import { AggregatesService } from 'src/shared/services/aggregates/service/aggregates.service';
 import { AggregateView } from 'src/shared/services/aggregates/type';
+import { ParamsService } from 'src/shared/services/params/service/params.service';
+import { LoggingType } from 'src/shared/services/params/type';
+import { cleanName } from 'src/shared/utils';
 
 import {
-  GetAggregateViewQueryDto,
   AggregateResults,
-  ParamsPayloadDto,
+  FilterResultTypes,
+  GetAggregateViewQueryDto,
   GetFilterQueryResult,
   GetFilterQueryResultItemFlat,
-  FilterResultTypes,
+  ParamsPayloadDto,
 } from '../dto';
 
 @Injectable()
@@ -23,7 +21,6 @@ export class StorageService {
   constructor(
     private readonly _paramsService: ParamsService,
     private readonly _aggregatesService: AggregatesService,
-    private readonly _firebaseService: FirebaseService,
   ) {}
 
   public async getParam(nodeId: string, paramId: string): Promise<number> {
@@ -39,9 +36,8 @@ export class StorageService {
     const node = cleanName(nodeId);
     const param = cleanName(paramId);
     try {
-      await this._paramsService.delayedWriteParamValue(node, param, value);
+      await this._paramsService.writeParamValue(node, param, value);
       this._logParam(node, param, value); // don't wait
-      this._firebaseService.updateVar(`${node}:${param}`, value);
     } catch (error) {
       this._logger.error(`Failed storing ${nodeId}:${paramId}`, error?.message);
     }
