@@ -32,7 +32,7 @@ export class CollectorService {
 
         const timeOffset =
           moment()
-            .subtract(startOffset.unit || 'd', startOffset.value || 1)
+            .subtract(startOffset.value || 1, startOffset.unit || 'd')
             .valueOf() / 1000;
 
         const result = await this._aggregateService.aggregateParam(

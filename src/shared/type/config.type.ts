@@ -1,4 +1,5 @@
 export enum Config {
+  hostUrl = 'HOST_URL',
   mySqlUrl = 'MYSQL_URL',
   mySqlPort = 'MYSQL_PORT',
   mySqlPoolSize = 'MYSQL_POOL_SIZE',
@@ -8,4 +9,6 @@ export enum Config {
   firebaseDb = 'FIREBASE_DB',
   firebaseDbPathVar = 'FIREBASE_DB_PATH_VAR',
   firebaseDbPathView = 'FIREBASE_DB_PATH_VIEW',
+  googleApiClientId = 'GOOGLE_API_CLIENT_ID',
+  googleApiSecret = 'GOOGLE_API_SECRET',
 }
