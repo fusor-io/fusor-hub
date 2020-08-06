@@ -5,6 +5,7 @@ import { ParamsService } from 'src/shared/services/params/service/params.service
 import { EXPORTER_DEFINITION_TYPE } from '../../const';
 import {
   ExporterConfigFirebase,
+  ExporterConfigGoogleSheet,
   ExporterDefinition,
   ExporterInstance,
   ExporterMap,
@@ -14,6 +15,7 @@ import {
 } from '../../type';
 import { CollectorService } from '../collector/collector.service';
 import { FirebaseSaverService } from '../fire-base-saver/firebase-saver.service';
+import { GoogleSheetSaverService } from '../google-sheet-saver/google-sheet-saver.service';
 
 @Injectable()
 export class ExporterService {
@@ -30,6 +32,7 @@ export class ExporterService {
     private readonly _definitionsService: DefinitionsService,
     private readonly _collectorService: CollectorService,
     private readonly _firebaseSaverService: FirebaseSaverService,
+    private readonly _googleSheetSaverService: GoogleSheetSaverService,
   ) {
     this.instantiateExporters();
   }
@@ -146,6 +149,10 @@ export class ExporterService {
           return;
         }
         case ExporterTarget.googleSheet: {
+          await this._googleSheetSaverService.save(
+            exporter?.output as ExporterConfigGoogleSheet,
+            output,
+          );
           return;
         }
         default:

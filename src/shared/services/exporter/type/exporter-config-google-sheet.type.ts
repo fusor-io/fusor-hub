@@ -28,7 +28,7 @@ export interface ExporterConfigGoogleSheetRangeAddress {
 export interface ExporterConfigGoogleSheet {
   spreadsheetId: string;
   sheetId: string;
-  type: ExporterConfigGoogleSheetType;
+  type?: ExporterConfigGoogleSheetType;
   destination:
     | ExporterConfigGoogleSheetCellAddress
     | ExporterConfigGoogleSheetCellLookup
