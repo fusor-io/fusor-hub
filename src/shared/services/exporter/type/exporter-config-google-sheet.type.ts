@@ -15,9 +15,9 @@ export interface ExporterConfigGoogleSheetCellAddress {
 
 export interface ExporterConfigGoogleSheetCellLookup {
   dimension: ExporterConfigGoogleSheetDimension;
-  lookupVector: string;
+  lookupRange: string;
   lookupKey: string;
-  valueVector: string;
+  targetColumn: string;
 }
 
 export interface ExporterConfigGoogleSheetRangeAddress {

@@ -150,6 +150,8 @@ export class ExporterService {
         }
         case ExporterTarget.googleSheet: {
           await this._googleSheetSaverService.save(
+            node,
+            param,
             exporter?.output as ExporterConfigGoogleSheet,
             output,
           );

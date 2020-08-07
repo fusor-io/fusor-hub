@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Auth, google } from 'googleapis';
@@ -31,10 +32,16 @@ export class GoogleSignInService {
 
   get authUrl(): string {
     return this.oAuth2Client.generateAuthUrl({
-      // eslint-disable-next-line @typescript-eslint/camelcase
       access_type: GoogleApiAccessType.offline,
       scope: GOOGLE_API_SCOPES,
     });
+  }
+
+  async getClientWithCredentials(): Promise<Auth.OAuth2Client> {
+    const credentials = await this.getCredentials();
+    const auth = this.oAuth2Client;
+    auth.setCredentials(credentials);
+    return auth;
   }
 
   async getCredentials(): Promise<Auth.Credentials> {
@@ -55,7 +62,7 @@ export class GoogleSignInService {
 
   async saveAuthTokens(tokens: Auth.Credentials): Promise<void> {
     if (!tokens) return;
-    
+
     const existingTokens = await this.loadAuthTokens();
 
     const refreshToken = existingTokens

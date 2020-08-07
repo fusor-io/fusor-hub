@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AggregatesServiceModule } from 'src/shared/services/aggregates/aggregates-service.module';
 import { DefinitionsServiceModule } from 'src/shared/services/definitions/definitions-service.module';
 import { FirebaseModule } from 'src/shared/services/firebase/firebase.module';
+import { GoogleSignInServiceModule } from 'src/shared/services/google-sign-in/google-sign-in.module';
 import { ParamsServiceModule } from 'src/shared/services/params/params-service.module';
 
 import { ExportBrokerService } from './services/broker/broker.service';
@@ -16,6 +17,7 @@ import { GoogleSheetSaverService } from './services/google-sheet-saver/google-sh
     FirebaseModule,
     AggregatesServiceModule,
     ParamsServiceModule,
+    GoogleSignInServiceModule,
   ],
   providers: [
     ExportBrokerService,

@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { google } from 'googleapis';
 import { GoogleSignInService } from 'src/shared/services/google-sign-in/service/google-sign-in.service';
@@ -13,9 +13,7 @@ import { GoogleSignInResponse } from '../type';
 
 @Controller('google-sign-in')
 export class GoogleSignInController {
-  constructor(
-    private readonly _googleSignInService: GoogleSignInService,
-  ) {}
+  constructor(private readonly _googleSignInService: GoogleSignInService) {}
 
   @Get('authorize')
   async authorize(@Res() response: Response) {
@@ -41,19 +39,44 @@ export class GoogleSignInController {
   }
 
   @Get('test')
+  async getTest() {
+    const credentials = await this._googleSignInService.getCredentials();
+    const auth = this._googleSignInService.oAuth2Client;
+    auth.setCredentials(credentials);
+    const sheets = google.sheets({ version: 'v4', auth });
+
+    const result = await new Promise((resolve, reject) =>
+      sheets.spreadsheets.values.get(
+        {
+          spreadsheetId: '1sOX2EpU_ByostGfhuAtDortGXgAiEYp80SnCh5uRXHM',
+          range: 'Sheet1!A3:A100',
+        },
+        (error, result) =>
+          error
+            ? reject(error)
+            : result?.status === 200
+            ? resolve(result?.data)
+            : reject(result?.statusText),
+      ),
+    ); 
+
+    return result;
+  }
+
+  @Post('test')
   async test() {
     const credentials = await this._googleSignInService.getCredentials();
     const auth = this._googleSignInService.oAuth2Client;
     auth.setCredentials(credentials);
     const sheets = google.sheets({ version: 'v4', auth });
 
-    const values = [[1234]];
+    const values = [[12345]];
     const requestBody = { values };
     const result = await new Promise((resolve, reject) =>
       sheets.spreadsheets.values.update(
         {
           spreadsheetId: '1sOX2EpU_ByostGfhuAtDortGXgAiEYp80SnCh5uRXHM',
-          range: 'Sheet1!B1:B1',
+          range: 'Sheet1!abc.def',
           valueInputOption: 'USER_ENTERED',
           requestBody,
         },
