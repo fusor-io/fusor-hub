@@ -16,6 +16,7 @@ export class ParamsService {
   private readonly _writeCache: WriteCache = {};
   private readonly _writeHooks: ParamWriteHookFn[] = [];
 
+  // TODO refactor using CQRS
   registerWriteHook(hook: ParamWriteHookFn): void {
     this._writeHooks.push(hook);
   }

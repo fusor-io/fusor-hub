@@ -1,10 +1,5 @@
+import { ExporterAggregateConfig, ExporterOutputConfig, ExporterTarget, ExporterType } from './exporter-definition.type';
 import { ExporterSchedule } from './exporter-schedule.type';
-import {
-  ExporterType,
-  ExporterAggregateConfig,
-  ExporterTarget,
-  ExporterOutputConfig,
-} from './exporter-definition.type';
 
 export interface ExporterSourceSelector {
   node: string;
@@ -18,6 +13,7 @@ export interface ExporterSource {
 }
 
 export interface ExporterInstance {
+  id: string;
   source: ExporterSource;
   target: ExporterTarget;
   output: ExporterOutputConfig;

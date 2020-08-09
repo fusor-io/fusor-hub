@@ -4,6 +4,7 @@ import { ParamsService } from 'src/shared/services/params/service/params.service
 
 import { EXPORTER_DEFINITION_TYPE } from '../../const';
 import {
+  CollectorResults,
   ExporterConfigFirebase,
   ExporterConfigGoogleSheet,
   ExporterContext,
@@ -35,7 +36,7 @@ export class ExporterService {
     private readonly _firebaseSaverService: FirebaseSaverService,
     private readonly _googleSheetSaverService: GoogleSheetSaverService,
   ) {
-    this.instantiateExporters();
+    this.loadExporters();
   }
 
   async getCronExporter(): Promise<ExporterInstance[]> {
@@ -51,7 +52,7 @@ export class ExporterService {
   async loadExporters(): Promise<boolean> {
     if (this._pLoading) return this._pLoading;
 
-    this._pLoading = this.instantiateExporters();
+    this._pLoading = this._instantiateExporters();
     this._logger.log('Loading exporters');
 
     try {
@@ -71,7 +72,7 @@ export class ExporterService {
     }
   }
 
-  async instantiateExporters(): Promise<[number, number]> {
+  private async _instantiateExporters(): Promise<[number, number]> {
     const definitions = await this._definitionsService.readDefinitions<ExporterDefinition>(
       EXPORTER_DEFINITION_TYPE,
     );
@@ -79,7 +80,7 @@ export class ExporterService {
     const allInstances: ExporterInstance[] = [];
 
     for (const definition of definitions) {
-      const instances = await this._populateInstances(definition.definition);
+      const instances = await this._populateInstances(definition.key, definition.definition);
       allInstances.push(...instances);
     }
 
@@ -92,7 +93,10 @@ export class ExporterService {
     return [definitions.length, allInstances.length];
   }
 
-  private async _populateInstances(definition: ExporterDefinition): Promise<ExporterInstance[]> {
+  private async _populateInstances(
+    key: string,
+    definition: ExporterDefinition,
+  ): Promise<ExporterInstance[]> {
     if (!definition?.collection) return [];
 
     const filter = definition.collection.filter || {};
@@ -111,6 +115,7 @@ export class ExporterService {
     const sources = await this._paramsService.regexpParams(nodeMatch, paramMatch);
 
     return sources.map(source => ({
+      id: `${key}:${source?.node}:${source?.param}`,
       source: {
         type: definition.collection.type,
         selector: { node: source.node, param: source.param },
@@ -132,9 +137,20 @@ export class ExporterService {
   }
 
   async export(exporter: ExporterInstance): Promise<void> {
+    const { node, param } = exporter?.source?.selector || {};
+    let output: CollectorResults;
     try {
-      const { node, param } = exporter?.source?.selector;
-      const output = await this._collectorService.collect(exporter?.source);
+      output = await this._collectorService.collect(exporter?.source);
+    } catch (error) {
+      if (error?.code === 'ER_NO_SUCH_TABLE') {
+        this._logger.log(`Skipping export: ${error?.sqlMessage}`);
+      } else {
+        this._logger.warn(`Failed collecting results ${JSON.stringify({ exporter, error })}`);
+      }
+      return;
+    }
+
+    try {
       const context: ExporterContext = { node, param, value: output };
 
       const target = exporter?.target;
