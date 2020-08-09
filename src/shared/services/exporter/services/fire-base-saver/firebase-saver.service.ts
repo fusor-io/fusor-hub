@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { FirebaseService } from 'src/shared/services/firebase/service/firebase.service';
 
-import { CollectorAggregate, CollectorResults, ExporterConfigFirebase } from '../../type';
+import { CollectorAggregate, ExporterConfigFirebase, ExporterContext } from '../../type';
 
 @Injectable()
 export class FirebaseSaverService {
   constructor(private readonly _firebaseService: FirebaseService) {}
 
-  async save(node: string, param: string, config: ExporterConfigFirebase, value: CollectorResults) {
+  async save(context: ExporterContext, config: ExporterConfigFirebase) {
+    const { param, node, value } = context;
     const path = config?.path || `${node}:${param}`;
     return Array.isArray(value) ? this.saveMany(path, value) : this.saveOne(path, value);
   }

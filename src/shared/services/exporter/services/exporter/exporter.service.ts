@@ -6,6 +6,7 @@ import { EXPORTER_DEFINITION_TYPE } from '../../const';
 import {
   ExporterConfigFirebase,
   ExporterConfigGoogleSheet,
+  ExporterContext,
   ExporterDefinition,
   ExporterInstance,
   ExporterMap,
@@ -134,6 +135,7 @@ export class ExporterService {
     try {
       const { node, param } = exporter?.source?.selector;
       const output = await this._collectorService.collect(exporter?.source);
+      const context: ExporterContext = { node, param, value: output };
 
       const target = exporter?.target;
 
@@ -141,19 +143,15 @@ export class ExporterService {
       switch (target) {
         case ExporterTarget.firebase: {
           await this._firebaseSaverService.save(
-            node,
-            param,
+            context,
             exporter?.output as ExporterConfigFirebase,
-            output,
           );
           return;
         }
         case ExporterTarget.googleSheet: {
           await this._googleSheetSaverService.save(
-            node,
-            param,
+            context,
             exporter?.output as ExporterConfigGoogleSheet,
-            output,
           );
           return;
         }

@@ -1,3 +1,5 @@
+import { ExporterRef } from './exporter-jsonata.type';
+
 export enum ExporterConfigGoogleSheetType {
   cellAddress = 'cell-address',
   cellLookup = 'cell-lookup',
@@ -14,20 +16,25 @@ export interface ExporterConfigGoogleSheetCellAddress {
 }
 
 export interface ExporterConfigGoogleSheetCellLookup {
-  dimension: ExporterConfigGoogleSheetDimension;
-  lookupRange: string;
-  lookupKey: string;
-  targetColumn: string;
+  // find column, by column title
+  lookupRangeX: string;
+  lookupKeyX: ExporterRef;
+
+  // find row, by row title
+  lookupRangeY: string;
+  lookupKeyY: ExporterRef;
 }
 
 export interface ExporterConfigGoogleSheetRangeAddress {
-  dimension: ExporterConfigGoogleSheetDimension;
+  // dimension: ExporterConfigGoogleSheetDimension;
   startCell: string;
+  appendDate: boolean;
 }
+
 
 export interface ExporterConfigGoogleSheet {
   spreadsheetId: string;
-  sheetId: string;
+  sheetId: ExporterRef;
   type?: ExporterConfigGoogleSheetType;
   destination:
     | ExporterConfigGoogleSheetCellAddress

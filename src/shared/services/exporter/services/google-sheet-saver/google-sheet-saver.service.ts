@@ -1,16 +1,18 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { Injectable, Logger } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
 import { GoogleSignInService } from 'src/shared/services/google-sign-in/service/google-sign-in.service';
 
 import {
   CollectorAggregate,
-  CollectorResults,
   ExporterConfigGoogleSheet,
   ExporterConfigGoogleSheetCellAddress,
   ExporterConfigGoogleSheetCellLookup,
   ExporterConfigGoogleSheetType,
+  ExporterContext,
+  ExporterRef,
 } from '../../type';
+import { ExporterConfigGoogleSheetRangeAddress } from './../../type/exporter-config-google-sheet.type';
+import { JsonataService } from './../jsonata/jsonata.service';
 
 /**
  * @see https://codelabs.developers.google.com/codelabs/sheets-api/#4
@@ -22,24 +24,25 @@ import {
 export class GoogleSheetSaverService {
   private readonly _logger = new Logger(this.constructor.name);
 
-  constructor(private readonly _googleSignInService: GoogleSignInService) {}
+  private _sheets: sheets_v4.Sheets;
 
-  async save(
-    node: string,
-    param: string,
-    config: ExporterConfigGoogleSheet,
-    value: CollectorResults,
-  ): Promise<void> {
-    return Array.isArray(value)
-      ? this.saveMany(config, value)
-      : this.saveOne(node, param, config, value);
+  constructor(
+    private readonly _googleSignInService: GoogleSignInService,
+    private readonly _jsonataService: JsonataService,
+  ) {}
+
+  async save(context: ExporterContext, config: ExporterConfigGoogleSheet): Promise<void> {
+    const auth = await this._googleSignInService.getClientWithCredentials();
+    this._sheets = google.sheets({ version: 'v4', auth });
+
+    return Array.isArray(context.value)
+      ? this._saveMany(config, context)
+      : this._saveOne(config, context);
   }
 
-  async saveOne(
-    node: string,
-    param: string,
+  private async _saveOne(
     config: ExporterConfigGoogleSheet,
-    value: number,
+    context: ExporterContext,
   ): Promise<void> {
     const {
       spreadsheetId,
@@ -48,41 +51,120 @@ export class GoogleSheetSaverService {
       destination = {},
     } = config || {};
 
+    const { node, param, value } = context;
+
     try {
       switch (type) {
         case ExporterConfigGoogleSheetType.cellAddress: {
           const {
             range = `${node}.${param}`,
           } = destination as ExporterConfigGoogleSheetCellAddress;
-          await this.writeCell(spreadsheetId, sheetId, range, value);
+          const sheet = await this.resolveSheetRef(spreadsheetId, sheetId, context);
+          await this.writeCell(spreadsheetId, sheet, range, value as number);
           return;
         }
         case ExporterConfigGoogleSheetType.cellLookup: {
           const {
-            lookupRange = 'A:A',
-            lookupKey = `${node}.${param}`,
-            targetColumn = '',
+            lookupRangeY = 'A:A',
+            lookupKeyY = node,
+            lookupRangeX = '1:1',
+            lookupKeyX = param,
           } = destination as ExporterConfigGoogleSheetCellLookup;
 
+          const lookupRefX = this._jsonataService.resolveRef(lookupKeyX, context);
+          const lookupRefY = this._jsonataService.resolveRef(lookupKeyY, context);
+
+          const sheet = await this.resolveSheetRef(spreadsheetId, sheetId, context);
           await this.lookupAndWriteCell(
             spreadsheetId,
-            sheetId,
-            lookupRange,
-            lookupKey,
-            targetColumn || String.fromCharCode(lookupRange.charCodeAt(0) + 1), // TODO resolve edge cases
-            value,
+            sheet,
+            lookupRangeX,
+            lookupRefX,
+            lookupRangeY,
+            lookupRefY,
+            value as number,
           );
+          return;
         }
         default:
-          return;
+          throw new Error('Unsupported configuration for single cell');
       }
     } catch (error) {
       this._logger.error(`Failed updating sheet: ${JSON.stringify({ config, value, error })}`);
     }
   }
 
-  async saveMany(config: ExporterConfigGoogleSheet, value: CollectorAggregate): Promise<void> {
+  private async _saveMany(
+    config: ExporterConfigGoogleSheet,
+    context: ExporterContext,
+  ): Promise<void> {
+    const {
+      spreadsheetId,
+      sheetId,
+      type = ExporterConfigGoogleSheetType.cellAddress,
+      destination = {},
+    } = config || {};
+
+    const values = (context?.value || []) as CollectorAggregate;
+
+    try {
+      switch (type) {
+        case ExporterConfigGoogleSheetType.rangeAddress: {
+          const { startCell, appendDate } = destination as ExporterConfigGoogleSheetRangeAddress;
+
+          const columnValues = appendDate
+            ? values.map(item => [item.value, this.timeStampToGoogleDate(item.ts)])
+            : values.map(item => [item.value]);
+          const sheet = await this.resolveSheetRef(spreadsheetId, sheetId, context);
+          await this.writeColumnRange(spreadsheetId, sheet, startCell, columnValues);
+          return;
+        }
+        default:
+          throw new Error('Unsupported configuration for cell range');
+      }
+    } catch (error) {
+      this._logger.error(`Failed updating sheet: ${JSON.stringify({ config, values, error })}`);
+    }
     return;
+  }
+
+  timeStampToGoogleDate(ts: number): number {
+    // goggle sheets date is number of days from 1899 Dec 30
+    // date in timestamp is seconds from 1970 Jan 1
+    return ts / (24 * 60 * 60) + 25569;
+  }
+
+  async writeColumnRange(
+    spreadsheetId: string,
+    sheetId: string,
+    startCell: string,
+    values: any[][],
+  ): Promise<void> {
+    const [, column = 'A', row = '1'] = /([A-Z]+)([0-9]+)/i.exec(startCell || '') || [];
+
+    const requestBody = { values };
+    const startRowNum = +row;
+    const endRowNum = startRowNum + values.length - 1;
+    const colCount = values?.[0]?.length || 0;
+    if (!colCount) throw new Error('No data to store');
+    const endColumn = String.fromCharCode(column.charCodeAt(0) + colCount - 1);
+
+    return await new Promise((resolve, reject) =>
+      this._sheets.spreadsheets.values.update(
+        {
+          spreadsheetId,
+          range: `${sheetId}!${column}${startRowNum}:${endColumn}${endRowNum}`,
+          valueInputOption: 'RAW',
+          requestBody,
+        },
+        (error, result) =>
+          error
+            ? reject(error)
+            : result?.status === 200
+            ? resolve(result?.statusText)
+            : reject(result?.statusText),
+      ),
+    );
   }
 
   async writeCell(
@@ -91,14 +173,11 @@ export class GoogleSheetSaverService {
     range: string,
     value: number | string,
   ): Promise<void> {
-    const auth = await this._googleSignInService.getClientWithCredentials();
-    const sheets = google.sheets({ version: 'v4', auth });
-
     const values = [[value]];
     const requestBody = { values };
 
     return await new Promise((resolve, reject) =>
-      sheets.spreadsheets.values.update(
+      this._sheets.spreadsheets.values.update(
         {
           spreadsheetId,
           range: `${sheetId}!${range}`,
@@ -118,13 +197,27 @@ export class GoogleSheetSaverService {
   async lookupAndWriteCell(
     spreadsheetId: string,
     sheetId: string,
-    lookupRange: string,
-    lookupKey: string,
-    writeColumn: string,
+    lookupRangeX: string,
+    lookupKeyX: string,
+    lookupRangeY: string,
+    lookupKeyY: string,
     value: number | string,
   ): Promise<void> {
-    const index = await this.lookupIndex(spreadsheetId, sheetId, lookupRange, lookupKey);
-    const cell = `${writeColumn}${index}`;
+    const indexX: string = await this.lookupIndexX(
+      spreadsheetId,
+      sheetId,
+      lookupRangeX,
+      lookupKeyX,
+    );
+    const indexY: number = await this.lookupIndexY(
+      spreadsheetId,
+      sheetId,
+      lookupRangeY,
+      lookupKeyY,
+    );
+    if (indexX === undefined || indexY === undefined) return;
+
+    const cell = `${indexX}${indexY}`;
     const writeRange = `${cell}:${cell}`;
     await this.writeCell(spreadsheetId, sheetId, writeRange, value);
   }
@@ -134,11 +227,8 @@ export class GoogleSheetSaverService {
     sheetId: string,
     range: string,
   ): Promise<sheets_v4.Schema$ValueRange> {
-    const auth = await this._googleSignInService.getClientWithCredentials();
-    const sheets = google.sheets({ version: 'v4', auth });
-
     const result = await new Promise((resolve, reject) =>
-      sheets.spreadsheets.values.get(
+      this._sheets.spreadsheets.values.get(
         {
           spreadsheetId,
           range: `${sheetId}!${range}`,
@@ -155,20 +245,79 @@ export class GoogleSheetSaverService {
     return result;
   }
 
-  async lookupIndex(
+  async lookupIndexY(
     spreadsheetId: string,
     sheetId: string,
     range: string,
     key: string,
   ): Promise<number> {
     const data = await this.readColumn(spreadsheetId, sheetId, range);
-    const column = data?.values?.map(row => row[0]?.toString().trim());
+    const series = (data?.values?.map(item => item?.[0]) || []).map(item =>
+      (item ?? '').toString().trim(),
+    );
 
-    const parts = /(.*)!([A-Z]+)([0-9]+):([A-Z]+)([0-9]+)/i.exec(data.range);
-    const startIdx = +(parts?.[3] || '0');
+    const [, , row = '1'] = /\w+!([A-Z]*)([0-9]*)(:.*)?/i.exec(data?.range || '');
+    const startIdx = +row;
 
     const keyLowerCase = (key || '').toLowerCase();
-    const valueIdx = column.findIndex(cell => cell?.toLowerCase() === keyLowerCase);
+    const valueIdx = series.findIndex(cell => cell?.toLowerCase() === keyLowerCase);
+    if (valueIdx < 0) return undefined;
     return startIdx + valueIdx;
+  }
+
+  async lookupIndexX(
+    spreadsheetId: string,
+    sheetId: string,
+    range: string,
+    key: string,
+  ): Promise<string> {
+    const data = await this.readColumn(spreadsheetId, sheetId, range);
+    const series = (data?.values?.[0] || []).map(item => (item ?? '').toString().trim());
+
+    const [, column = 'A'] = /\w+!([A-Z]*)([0-9]*)(:.*)?/i.exec(data?.range || '');
+    const startIdx = column.charCodeAt(0);
+
+    const keyLowerCase = (key || '').toLowerCase();
+    const valueIdx = series.findIndex(cell => cell?.toLowerCase() === keyLowerCase);
+    if (valueIdx < 0) return undefined;
+    return String.fromCharCode(startIdx + valueIdx);
+  }
+
+  async resolveSheetRef(
+    spreadsheetId: string,
+    sheetRef: ExporterRef,
+    context: ExporterContext,
+  ): Promise<string> {
+    const sheet = this._jsonataService.resolveRef(sheetRef, context);
+    await this.assureSheet(spreadsheetId, sheet);
+    return sheet;
+  }
+
+  async assureSheet(spreadsheetId: string, title: string): Promise<void> {
+    const sheetList = await this.getSheets(spreadsheetId);
+    if (sheetList.includes(title)) return;
+
+    const requestBody = {
+      requests: [
+        {
+          addSheet: {
+            properties: { title },
+          },
+        },
+      ],
+    };
+
+    await this._sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody,
+    });
+  }
+
+  async getSheets(spreadsheetId: string): Promise<string[]> {
+    const response = await this._sheets.spreadsheets.get({ spreadsheetId });
+    const sheetList = (response?.data?.sheets || [])
+      .map(sheet => sheet?.properties?.title)
+      .filter(title => title);
+    return sheetList;
   }
 }

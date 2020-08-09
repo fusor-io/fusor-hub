@@ -10,6 +10,7 @@ import { CollectorService } from './services/collector/collector.service';
 import { ExporterService } from './services/exporter/exporter.service';
 import { FirebaseSaverService } from './services/fire-base-saver/firebase-saver.service';
 import { GoogleSheetSaverService } from './services/google-sheet-saver/google-sheet-saver.service';
+import { JsonataService } from './services/jsonata/jsonata.service';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { GoogleSheetSaverService } from './services/google-sheet-saver/google-sh
     CollectorService,
     FirebaseSaverService,
     GoogleSheetSaverService,
+    JsonataService,
   ],
   exports: [ExportBrokerService],
 })
