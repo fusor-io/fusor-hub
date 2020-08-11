@@ -9,6 +9,8 @@ import { GoogleSignInResponse } from '../type';
  * 1. Enable Google Sheets API, by following step 1 here:
  * @see https://developers.google.com/sheets/api/quickstart/nodejs
  * 2. Set GOOGLE_API_CLIENT_ID and GOOGLE_API_SECRET in .env file
+ * 3. If needed configure credentials
+ * @see https://console.developers.google.com/apis/credentials
  */
 
 @Controller('google-sign-in')
