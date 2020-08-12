@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
+import * as NodeCache from 'node-cache';
 import { GoogleSignInService } from 'src/shared/services/google-sign-in/service/google-sign-in.service';
 
 import {
@@ -19,6 +20,9 @@ import { JsonataService } from './../jsonata/jsonata.service';
  * @see https://developers.google.com/identity/sign-in/web/
  *
  */
+
+const sheetsCache = new NodeCache({ stdTTL: 5 * 60 });
+const rangeCache = new NodeCache({ stdTTL: 5 * 60 });
 
 @Injectable()
 export class GoogleSheetSaverService {
@@ -222,11 +226,15 @@ export class GoogleSheetSaverService {
     await this.writeCell(spreadsheetId, sheetId, writeRange, value);
   }
 
-  async readColumn(
+  async readRange(
     spreadsheetId: string,
     sheetId: string,
     range: string,
   ): Promise<sheets_v4.Schema$ValueRange> {
+    const key = `${spreadsheetId}:${sheetId}!${range}`;
+    const cachedData = rangeCache.get<sheets_v4.Schema$ValueRange>(key);
+    if (cachedData) return cachedData;
+
     const result = await new Promise((resolve, reject) =>
       this._sheets.spreadsheets.values.get(
         {
@@ -242,6 +250,7 @@ export class GoogleSheetSaverService {
       ),
     );
 
+    rangeCache.set(key, result);
     return result;
   }
 
@@ -251,7 +260,7 @@ export class GoogleSheetSaverService {
     range: string,
     key: string,
   ): Promise<number> {
-    const data = await this.readColumn(spreadsheetId, sheetId, range);
+    const data = await this.readRange(spreadsheetId, sheetId, range);
     const series = (data?.values?.map(item => item?.[0]) || []).map(item =>
       (item ?? '').toString().trim(),
     );
@@ -271,7 +280,7 @@ export class GoogleSheetSaverService {
     range: string,
     key: string,
   ): Promise<string> {
-    const data = await this.readColumn(spreadsheetId, sheetId, range);
+    const data = await this.readRange(spreadsheetId, sheetId, range);
     const series = (data?.values?.[0] || []).map(item => (item ?? '').toString().trim());
 
     const [, column = 'A'] = /\w+!([A-Z]*)([0-9]*)(:.*)?/i.exec(data?.range || '');
@@ -314,10 +323,15 @@ export class GoogleSheetSaverService {
   }
 
   async getSheets(spreadsheetId: string): Promise<string[]> {
+    const cachedData = sheetsCache.get<string[]>(spreadsheetId);
+    if (cachedData) return cachedData;
+
     const response = await this._sheets.spreadsheets.get({ spreadsheetId });
     const sheetList = (response?.data?.sheets || [])
       .map(sheet => sheet?.properties?.title)
       .filter(title => title);
+
+    sheetsCache.set(spreadsheetId, sheetList);
     return sheetList;
   }
 }
