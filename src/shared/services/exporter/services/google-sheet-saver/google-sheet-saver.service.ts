@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
 import * as NodeCache from 'node-cache';
 import { GoogleSignInService } from 'src/shared/services/google-sign-in/service/google-sign-in.service';
@@ -94,6 +94,9 @@ export class GoogleSheetSaverService {
           throw new Error('Unsupported configuration for single cell');
       }
     } catch (error) {
+      if (await this._tooManyRequests(error)) {
+        return this._saveOne(config, context);
+      }
       this._logger.error(`Failed updating sheet: ${JSON.stringify({ config, value, error })}`);
     }
   }
@@ -127,9 +130,22 @@ export class GoogleSheetSaverService {
           throw new Error('Unsupported configuration for cell range');
       }
     } catch (error) {
+      if (await this._tooManyRequests(error)) {
+        return this._saveMany(config, context);
+      }
       this._logger.error(`Failed updating sheet: ${JSON.stringify({ config, values, error })}`);
     }
     return;
+  }
+
+  private async _tooManyRequests(error: any): Promise<boolean> {
+    if (error?.response?.data?.error?.code === HttpStatus.TOO_MANY_REQUESTS) {
+      this._logger.log('Quota exceeded, pausing...');
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      this._logger.log('...resuming');
+      return true;
+    }
+    return false;
   }
 
   timeStampToGoogleDate(ts: number): number {
