@@ -38,7 +38,8 @@ export class ExportBrokerService {
       this._logger.log(`Canceling ${jobName}`);
       scheduledJobs[jobName].cancel();
     });
-    this._scheduleJobs();
+    await this._exporter.loadExporters();
+    await this._scheduleJobs();
   }
 
   private async _scheduleJobs(): Promise<void> {
