@@ -1,10 +1,10 @@
-import { Controller, Get, Query, Headers, Param, Res } from '@nestjs/common';
-import * as MessagePack from 'msgpack-lite';
+import { Controller, Get, Headers, Param, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
+import * as MessagePack from 'msgpack-lite';
 
-import { StorageService } from '../../service/storage.service';
+import { FilterResultTypes, GetFilterQueryDto, GetParamParamsDto } from '../../dto';
 import { GetAggregateViewQueryDto } from '../../dto/get-aggregate-view-query.dto';
-import { GetParamParamsDto, GetFilterQueryDto, FilterResultTypes } from '../../dto';
+import { StorageService } from '../../service/storage.service';
 
 @Controller('aggregate')
 export class AggregateController {
@@ -19,12 +19,31 @@ export class AggregateController {
     const results = await this._storageService.getBatch(Object.keys(query));
     switch (accept) {
       case 'text/html':
-        return response.send(this._storageService.flattenObject(results));
+        return response.send(this._storageService.convertToText(results));
       case 'application/msgpack':
         response.setHeader('Content-type', accept);
         return response.send(MessagePack.encode(results));
       default:
         return response.send(results);
+    }
+  }
+
+  @Get('batch/flat')
+  async getParamBatchFlat(
+    @Headers('accept') accept: string,
+    @Query() query,
+    @Res() response: Response,
+  ) {
+    const results = await this._storageService.getBatch(Object.keys(query));
+    const flatResults = this._storageService.flatten(results);
+    switch (accept) {
+      case 'text/html':
+        return response.send(this._storageService.convertToText(flatResults));
+      case 'application/msgpack':
+        response.setHeader('Content-type', accept);
+        return response.send(MessagePack.encode(flatResults));
+      default:
+        return response.send(flatResults);
     }
   }
 

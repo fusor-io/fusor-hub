@@ -48,9 +48,7 @@ export class StorageService {
 
     if (payload && Object.keys(payload).length) {
       await Promise.all(
-        Object.keys(payload).map(paramId =>
-          this.saveParam(nodeId, paramId, payload[paramId]),
-        ),
+        Object.keys(payload).map(paramId => this.saveParam(nodeId, paramId, payload[paramId])),
       );
     }
 
@@ -116,14 +114,28 @@ export class StorageService {
     );
   }
 
-  flattenObject(values: AggregateResults): string {
+  convertToText(values: AggregateResults | Record<string, number>): string {
     const results = [];
+    Object.keys(values).forEach(nodeId => {
+      const node = values[nodeId];
+
+      if (typeof node === 'object') {
+        Object.keys(node).forEach(paramId => results.push(`${nodeId}.${paramId}=${node[paramId]}`));
+      } else {
+        results.push(`${nodeId}=${node}`);
+      }
+    });
+    return results.join('\n');
+  }
+
+  flatten(values: AggregateResults): Record<string, number> {
+    const results: Record<string, number> = {};
     Object.keys(values).forEach(nodeId =>
-      Object.keys(values[nodeId]).forEach(paramId =>
-        results.push(`${nodeId}.${paramId}=${values[nodeId][paramId]}`),
+      Object.keys(values[nodeId]).forEach(
+        paramId => (results[`${nodeId}.${paramId}`] = values[nodeId][paramId]),
       ),
     );
-    return results.join('\n');
+    return results;
   }
 
   private async _logParam(nodeId: string, paramId: string, value: number): Promise<void> {
