@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DefinitionsService } from 'src/shared/services/definitions/service/definitions.service';
+import { DefinitionQueryResult } from 'src/shared/services/definitions/type';
 import { ParamsService } from 'src/shared/services/params/service/params.service';
 
 import { EXPORTER_DEFINITION_TYPE } from '../../const';
@@ -28,6 +29,8 @@ export class ExporterService {
 
   private _pLoading = undefined;
   private _isReady = false;
+
+  private _definitions: DefinitionQueryResult<ExporterDefinition>[];
 
   constructor(
     private readonly _paramsService: ParamsService,
@@ -72,14 +75,29 @@ export class ExporterService {
     }
   }
 
+  async areDefinitionsUpdated(): Promise<boolean> {
+    const definitions =
+      (await this._definitionsService.readDefinitions<ExporterDefinition>(
+        EXPORTER_DEFINITION_TYPE,
+      )) || [];
+
+    const oldDefinitions = this._definitions || [];
+
+    if (oldDefinitions.length !== definitions.length) {
+      return true;
+    }
+
+    return JSON.stringify(definitions) !== JSON.stringify(oldDefinitions);
+  }
+
   private async _instantiateExporters(): Promise<[number, number]> {
-    const definitions = await this._definitionsService.readDefinitions<ExporterDefinition>(
+    this._definitions = await this._definitionsService.readDefinitions<ExporterDefinition>(
       EXPORTER_DEFINITION_TYPE,
     );
 
     const allInstances: ExporterInstance[] = [];
 
-    for (const definition of definitions) {
+    for (const definition of this._definitions) {
       const instances = await this._populateInstances(definition.key, definition.definition);
       allInstances.push(...instances);
     }
@@ -90,7 +108,7 @@ export class ExporterService {
       instance => instance?.schedule?.type === ExporterScheduleType.cron,
     );
 
-    return [definitions.length, allInstances.length];
+    return [this._definitions.length, allInstances.length];
   }
 
   private async _populateInstances(

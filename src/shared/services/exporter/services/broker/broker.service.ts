@@ -33,7 +33,14 @@ export class ExportBrokerService {
   }
 
   private async _reloadExporters() {
-    this._logger.log('Reloading exporter');
+    this._logger.log('Checking definitions...');
+    const needReloading = await this._exporter.areDefinitionsUpdated();
+    if (!needReloading) {
+      this._logger.log('...no updates');
+    }
+
+    this._logger.log('Updated detected, reloading exporter');
+
     Object.keys(scheduledJobs).forEach(jobName => {
       this._logger.log(`Canceling ${jobName}`);
       scheduledJobs[jobName].cancel();
