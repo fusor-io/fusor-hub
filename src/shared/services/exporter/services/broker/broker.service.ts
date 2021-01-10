@@ -37,6 +37,7 @@ export class ExportBrokerService {
     const needReloading = await this._exporter.areDefinitionsUpdated();
     if (!needReloading) {
       this._logger.log('...no updates');
+      return;
     }
 
     this._logger.log('Updated detected, reloading exporter');
