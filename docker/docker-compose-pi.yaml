@@ -9,7 +9,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: very-secret-word
     volumes:
-      - ./data/db-pi:/var/lib/mysql
+      - ./data/db-pi:/config
 
   adminer:
     image: adminer
