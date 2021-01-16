@@ -40,7 +40,7 @@ export class ExportBrokerService {
       return;
     }
 
-    this._logger.log('Updated detected, reloading exporter');
+    this._logger.log('Updates detected, reloading exporter');
 
     Object.keys(scheduledJobs).forEach(jobName => {
       this._logger.log(`Canceling ${jobName}`);
@@ -52,13 +52,18 @@ export class ExportBrokerService {
 
   private async _scheduleJobs(): Promise<void> {
     const exporterInstances = await this._exporter.getCronExporter();
+
     for (const instance of exporterInstances) {
       const schedule = instance?.schedule?.config?.schedule;
-      this._logger.log(`Scheduling ${instance.id}`);
 
+
+      this._logger.log(`Scheduling ${instance.id}`);
       scheduleJob(instance.id, schedule, () => {
         this._exporter.export(instance);
       });
+      
+      this._logger.log(`Initial run of ${instance.id}`);
+      await this._exporter.export(instance);
     }
   }
 
