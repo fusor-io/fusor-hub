@@ -37,7 +37,7 @@
             "config":
             {
                 // "grouping" defines time block scope for aggregation operation to be performed
-                "grouping": "1min" | "15min" | "30min" | "1h" | "3h" | "6h" | "12h" | "1d" | "1w" | "1mon" | "3mon" | "6mon" | "1y",
+                "grouping": "1min" | "15min" | "30min" | "1h" | "2h" | "3h" | "6h" | "12h" | "1d" | "1w" | "1mon" | "3mon" | "6mon" | "1y",
                 // "operation" defines what aggregation function to be applied for data in a time block
                 "operation": "avg" | "min" | "max",
                 // "startOffset" defines beginning of aggregation time frame. Beginning is defined by offset from the current time

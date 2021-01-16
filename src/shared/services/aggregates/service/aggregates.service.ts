@@ -1,16 +1,11 @@
-import { escape } from 'mysql';
 import { Injectable } from '@nestjs/common';
-
+import { escape } from 'mysql';
 import { AGGREGATE_VIEW_GROUPING_MAP } from 'src/shared/const';
+
 import { DatabaseService } from '../../database/service/database.service';
 import { ParamsService } from '../../params/service/params.service';
-
-import { AggregateViewGrouping, AggregateViewValue, AggregateView } from '../type';
-import {
-  AGGREGATE_VALUE_MAP,
-  MINUTE_PRECISION_GROUPINGS,
-  MONTH_PRECISION_GROUPINGS,
-} from '../const';
+import { AGGREGATE_VALUE_MAP, MINUTE_PRECISION_GROUPINGS, MONTH_PRECISION_GROUPINGS } from '../const';
+import { AggregateView, AggregateViewGrouping, AggregateViewValue } from '../type';
 
 @Injectable()
 export class AggregatesService {

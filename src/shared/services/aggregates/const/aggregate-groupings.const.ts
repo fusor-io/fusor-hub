@@ -5,6 +5,7 @@ export const MINUTE_PRECISION_GROUPINGS = [
   AggregateViewGrouping.by15Minutes,
   AggregateViewGrouping.by30Minutes,
   AggregateViewGrouping.by1Hour,
+  AggregateViewGrouping.by2Hours,
   AggregateViewGrouping.by3Hours,
   AggregateViewGrouping.by6Hours,
   AggregateViewGrouping.by12Hours,

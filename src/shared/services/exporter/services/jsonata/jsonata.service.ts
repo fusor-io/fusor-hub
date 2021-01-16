@@ -14,7 +14,7 @@ export class JsonataService {
       const expression = jsonata(ref.query);
       const result = expression.evaluate(context);
       if (Array.isArray(result))
-        throw 'JSONata should evaluate to single value. Array was received.';
+        throw 'JSONata should evaluate to a single value. Array was received.';
         
       return (result ?? '').toString();
     } catch (error) {

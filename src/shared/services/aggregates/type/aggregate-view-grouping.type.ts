@@ -3,6 +3,7 @@ export enum AggregateViewGrouping {
   by15Minutes = '15min',
   by30Minutes = '30min',
   by1Hour = '1h',
+  by2Hours = '2h',
   by3Hours = '3h',
   by6Hours = '6h',
   by12Hours = '12h',
