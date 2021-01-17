@@ -1,7 +1,7 @@
 import { Bucket, Storage } from '@google-cloud/storage';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as crc32 from 'fast-crc32c';
+import * as crc32 from 'crc-32';
 import { Config } from 'src/shared/type';
 import { inspect } from 'util';
 
@@ -44,7 +44,7 @@ export class BackupService {
       }
 
       const dataStr = typeof content === 'string' ? content : JSON.stringify(content);
-      const crc: number = crc32.calculate(dataStr);
+      const crc: number = crc32.str(dataStr);
       const crcStr = crc.toString(16);
 
       const buffer = Buffer.from(dataStr);
