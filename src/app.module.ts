@@ -8,6 +8,7 @@ import { GoogleSignInModule } from './features/google-sign-in/google-sign-in.mod
 import { NodeController } from './features/primitive-storage/controller/node/node.controller';
 import { PrimitiveStorageModule } from './features/primitive-storage/primitive-storage.module';
 import { MsgPackMiddleware } from './shared/middleware/msg-pack-middleware/msg-pack-middleware';
+import { BackupManagerServiceModule } from './shared/services/backup-manager/backup-manager-service.module';
 import { ExporterModule } from './shared/services/exporter/exporter.module';
 import { SchedulerModule } from './shared/services/scheduler/scheduler.module';
 
@@ -19,6 +20,7 @@ import { SchedulerModule } from './shared/services/scheduler/scheduler.module';
     GoogleSignInModule,
     SchedulerModule,
     ExporterModule,
+    BackupManagerServiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

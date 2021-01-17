@@ -12,3 +12,11 @@ export class DefinitionQueryResultDto<T> {
     };
   }
 }
+
+export class CompleteDefinitionQueryResultDto {
+  key: string;
+  type: string;
+  definition: string;
+  version: number;
+  ts: number;
+}

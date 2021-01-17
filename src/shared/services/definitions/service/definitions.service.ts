@@ -3,6 +3,7 @@ import { plainToClass } from 'class-transformer';
 
 import { DatabaseService } from '../../database/service/database.service';
 import { DefinitionQueryResultDto } from '../dto';
+import { CompleteDefinitionQueryResultDto } from '../dto/definition-query-result.dto';
 import { DEFINITIONS_TABLE, DEFINITIONS_TABLE_NAME } from '../sql';
 import { DefinitionQueryResult } from '../type';
 
@@ -42,5 +43,12 @@ export class DefinitionsService {
       definitions &&
       definitions.map((definition: DefinitionQueryResultDto<T>) => definition.toModel())
     );
+  }
+
+  async dumpAllDefinitions(): Promise<CompleteDefinitionQueryResultDto[]> {
+    return await this._databaseService.query<CompleteDefinitionQueryResultDto>({
+      sql: `SELECT \`type\`, \`key\`, \`definition\`, \`version\`, UNIX_TIMESTAMP(\`ts\`) as ts FROM ??`,
+      values: [DEFINITIONS_TABLE_NAME],
+    });
   }
 }

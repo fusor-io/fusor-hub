@@ -1,3 +1,8 @@
 {
-    "explorer.compactFolders": false
+    "explorer.compactFolders": false,
+    "cSpell.words": [
+        "iogateway",
+        "jsonata"
+    ],
+    "debug.javascript.autoAttachFilter": "onlyWithFlag"
 }

@@ -11,4 +11,7 @@ export enum Config {
   firebaseDbPathView = 'FIREBASE_DB_PATH_VIEW',
   googleApiClientId = 'GOOGLE_API_CLIENT_ID',
   googleApiSecret = 'GOOGLE_API_SECRET',
+  googleCloudProjectId = 'GOOGLE_CLOUD_PROJECT_ID',
+  googleCloudStorageBucket = 'GOOGLE_CLOUD_STORAGE_BUCKET',
+  googleCloudStorageBackupFolder = 'GOOGLE_CLOUD_STORAGE_BACKUP_FOLDER'
 }
