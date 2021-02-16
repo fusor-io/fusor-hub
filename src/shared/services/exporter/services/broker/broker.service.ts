@@ -15,12 +15,16 @@ export class ExportBrokerService {
     this._paramsService.registerWriteHook((nodeId, paramId) => this.onParamUpdate(nodeId, paramId));
     this._init();
 
-    // reload exporters each 5 minutes
+    // check if we need reloading exporters each 5 minutes
     setInterval(() => this._reloadExporters(), 5 * 60 * 1000);
   }
 
   onParamUpdate(node: string, param: string) {
     this._exporter.exportParam(node, param);
+  }
+
+  reload() {
+    this._reloadExporters(true);
   }
 
   private async _initialParamExport() {
@@ -32,15 +36,19 @@ export class ExportBrokerService {
     this._logger.log('Initial param export complete');
   }
 
-  private async _reloadExporters() {
-    this._logger.log('Checking definitions...');
-    const needReloading = await this._exporter.areDefinitionsUpdated();
-    if (!needReloading) {
-      this._logger.log('...no updates');
-      return;
-    }
+  private async _reloadExporters(forcedReload = false) {
+    if (forcedReload) {
+      this._logger.log('Reloading exporter');
+    } else {
+      this._logger.log('Checking definitions...');
 
-    this._logger.log('Updates detected, reloading exporter');
+      const needReloading = await this._exporter.areDefinitionsUpdated();
+      if (!needReloading) {
+        this._logger.log('...no updates');
+        return;
+      }
+      this._logger.log('Updates detected, reloading exporter');
+    }
 
     Object.keys(scheduledJobs).forEach(jobName => {
       this._logger.log(`Canceling ${jobName}`);
@@ -56,12 +64,11 @@ export class ExportBrokerService {
     for (const instance of exporterInstances) {
       const schedule = instance?.schedule?.config?.schedule;
 
-
       this._logger.log(`Scheduling ${instance.id}`);
       scheduleJob(instance.id, schedule, () => {
         this._exporter.export(instance);
       });
-      
+
       this._logger.log(`Initial run of ${instance.id}`);
       await this._exporter.export(instance);
     }
