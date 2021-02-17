@@ -44,7 +44,7 @@ export class StorageService {
   }
 
   async saveBatch(nodeId: string, payload: ParamsPayloadDto): Promise<void> {
-    this._logger.log(`Saving batch ${nodeId}`);
+    this._logger.log(`Saving batch ${nodeId}: ${JSON.stringify(payload)}`);
 
     if (payload && Object.keys(payload).length) {
       await Promise.all(
