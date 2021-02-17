@@ -53,6 +53,7 @@
     "http-status-codes": "^1.4.0",
     "jsonata": "^1.8.3",
     "moment": "^2.27.0",
+    "msgpack": "^1.0.3",
     "msgpack-lite": "^0.1.26",
     "mysql": "^2.18.1",
     "node-cache": "^5.1.2",
