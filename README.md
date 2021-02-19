@@ -1,3 +1,12 @@
+## What is it?
+
+Fusor is a framework for Smart House enthusiasts simplifying development of custom IOT nodes and letting to focus on code logic. 
+Fusor hub is the central component connecting all pieces together.
+
+## Big picture
+
+![Big picture](fusor.png "Big picture")
+
 ## Installation
 
 ```bash
