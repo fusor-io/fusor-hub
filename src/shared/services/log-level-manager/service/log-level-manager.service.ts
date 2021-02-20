@@ -21,7 +21,7 @@ export class LogLevelManagerService {
     let logLevel = ActiveLogLevel.log;
     try {
       logLevel =
-        (await this._paramsService.readParamValue(HUB_NODE, LOG_LEVEL_PARAM)) | ActiveLogLevel.log;
+        (await this._paramsService.readParamValue(HUB_NODE, LOG_LEVEL_PARAM)) || ActiveLogLevel.log;
     } catch (error) {
       this._logger.error('Failed reading log level param', error?.message);
       return;
