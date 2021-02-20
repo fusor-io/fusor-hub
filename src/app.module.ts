@@ -10,6 +10,7 @@ import { PrimitiveStorageModule } from './features/primitive-storage/primitive-s
 import { MsgPackMiddleware } from './shared/middleware/msg-pack-middleware/msg-pack-middleware';
 import { BackupManagerServiceModule } from './shared/services/backup-manager/backup-manager-service.module';
 import { ExporterModule } from './shared/services/exporter/exporter.module';
+import { LogLevelManagerModule } from './shared/services/log-level-manager/log-level-manager.module';
 import { SchedulerModule } from './shared/services/scheduler/scheduler.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { SchedulerModule } from './shared/services/scheduler/scheduler.module';
     SchedulerModule,
     ExporterModule,
     BackupManagerServiceModule,
+    LogLevelManagerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
