@@ -20,8 +20,11 @@ export class LogLevelManagerService {
   async readLogLevel(): Promise<void> {
     let logLevel = ActiveLogLevel.log;
     try {
-      logLevel =
-        (await this._paramsService.readParamValue(HUB_NODE, LOG_LEVEL_PARAM)) || ActiveLogLevel.log;
+      logLevel = await this._paramsService.readParamValue(HUB_NODE, LOG_LEVEL_PARAM, false);
+
+      if (logLevel === undefined) {
+        logLevel = ActiveLogLevel.log;
+      }
     } catch (error) {
       this._logger.error('Failed reading log level param', error?.message);
       return;

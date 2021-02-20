@@ -117,10 +117,12 @@ export class ParamsService {
     return results || [];
   }
 
-  async readParamValue(nodeId: string, paramId: string): Promise<number> {
-    const cachedItem = this._writeCache[this._getCacheKey(nodeId, paramId)];
-    if (cachedItem) {
-      return cachedItem.value;
+  async readParamValue(nodeId: string, paramId: string, useCache = true): Promise<number> {
+    if (useCache) {
+      const cachedItem = this._writeCache[this._getCacheKey(nodeId, paramId)];
+      if (cachedItem) {
+        return cachedItem.value;
+      }
     }
 
     const results = await this._databaseService.query<NodeParamValue>({
