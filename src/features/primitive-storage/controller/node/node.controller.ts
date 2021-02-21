@@ -1,11 +1,8 @@
-import { Controller, Body, Post, Param, Get, Put } from '@nestjs/common';
-import {
-  PostBatchParamsDto,
-  GetParamParamsDto,
-  PutParamParamsDto,
-  ParamsPayloadDto,
-} from '../../dto';
+import { Body, Controller, Get, Headers, Param, Post, Put } from '@nestjs/common';
+
+import { GetParamParamsDto, ParamsPayloadDto, PostBatchParamsDto, PutParamParamsDto } from '../../dto';
 import { StorageService } from '../../service/storage.service';
+import { CacheControl } from '../../type';
 
 @Controller('node')
 export class NodeController {
@@ -23,9 +20,16 @@ export class NodeController {
   }
 
   @Get(':nodeId/:paramId')
-  async getParam(@Param() params: GetParamParamsDto) {
+  async getParam(
+    @Param() params: GetParamParamsDto,
+    @Headers('Cache-Control') cacheControl: CacheControl,
+  ) {
     const { nodeId, paramId } = params;
-    const value = await this._storageService.getParam(nodeId, paramId);
+    const value = await this._storageService.getParam(
+      nodeId,
+      paramId,
+      cacheControl !== CacheControl.noCache,
+    );
     return value === undefined ? '' : value.toString();
   }
 }

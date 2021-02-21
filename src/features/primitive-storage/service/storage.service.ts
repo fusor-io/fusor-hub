@@ -23,9 +23,9 @@ export class StorageService {
     private readonly _aggregatesService: AggregatesService,
   ) {}
 
-  public async getParam(nodeId: string, paramId: string): Promise<number> {
+  public async getParam(nodeId: string, paramId: string, useCache = true): Promise<number> {
     try {
-      return await this._paramsService.readParamValue(cleanName(nodeId), cleanName(paramId));
+      return await this._paramsService.readParamValue(cleanName(nodeId), cleanName(paramId), useCache);
     } catch (error) {
       this._logger.error(`Failed reading param ${nodeId}:${paramId}`, error?.message);
       return undefined;

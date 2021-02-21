@@ -118,18 +118,41 @@ export class ParamsService {
   }
 
   async readParamValue(nodeId: string, paramId: string, useCache = true): Promise<number> {
+    const cacheKey = this._getCacheKey(nodeId, paramId);
+    const cachedItem = this._writeCache[cacheKey];
+
     if (useCache) {
-      const cachedItem = this._writeCache[this._getCacheKey(nodeId, paramId)];
       if (cachedItem) {
         return cachedItem.value;
       }
     }
 
+    // this path is used when we do not want cache, or value is not in cache
+
     const results = await this._databaseService.query<NodeParamValue>({
-      sql: `SELECT \`value\` FROM ?? WHERE \`node\`=? AND \`param\`=? LIMIT 1`,
+      sql: `SELECT \`value\`, UNIX_TIMESTAMP(\`ts\`) as \`ts\` FROM ?? WHERE \`node\`=? AND \`param\`=? LIMIT 1`,
       values: [PARAM_TABLE_NAME, nodeId, paramId],
     });
-    return results && results[0]?.value;
+
+    let result = results && results[0];
+
+    if (cachedItem && (result?.ts || 0) * 1000 <= cachedItem.lastWriteTime) {
+      // results are older than cache - use cached value
+      result = { param: paramId, value: cachedItem.value, ts: cachedItem.lastWriteTime };
+    } else {
+      // update cache - it is obsolete or non present
+      if (result?.value !== undefined) {
+        this._writeCache[cacheKey] = {
+          nodeId,
+          paramId,
+          value: result.value,
+          lastWriteTime: Math.round(result.ts * 1000),
+          isFlushed: true,
+        };
+      }
+    }
+
+    return result?.value;
   }
 
   async filterParams(nodePattern: string, paramPattern: string): Promise<ParamEntry[]> {
