@@ -16,7 +16,7 @@ export class NodeController {
   @Put(':nodeId/:paramId/:value')
   putParam(@Param() params: PutParamParamsDto) {
     const { nodeId, paramId: paramId, value } = params;
-    this._storageService.saveParam(nodeId, paramId, parseFloat(value));
+    this._storageService.saveParam(nodeId, paramId, value);
   }
 
   @Get(':nodeId/:paramId')
