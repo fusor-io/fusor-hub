@@ -157,7 +157,7 @@ export class ParamsService {
     return result?.value;
   }
 
-  async filterParams(nodePattern: string, paramPattern: string): Promise<ParamEntry[]> {
+  async filterParams(nodePattern?: string, paramPattern?: string): Promise<ParamEntry[]> {
     await this.flushWriteCache();
 
     const results = await this._databaseService.query<ParamEntry>({
@@ -168,7 +168,7 @@ export class ParamsService {
     return results || [];
   }
 
-  async regexpParams(nodeMatch?: string, paramMatch?: string): Promise<ParamEntry[]> {
+  async regexpParams(nodeMatch: string, paramMatch: string): Promise<ParamEntry[]> {
     await this.flushWriteCache();
 
     const results = await this._databaseService.query<ParamEntry>({

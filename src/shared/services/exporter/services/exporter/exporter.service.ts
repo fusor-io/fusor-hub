@@ -227,7 +227,7 @@ export class ExporterService {
   }
 
   private async _getParamsSnapshot(): Promise<NodeParam[]> {
-    const allParams = await this._paramsService.regexpParams();
+    const allParams = await this._paramsService.filterParams();
     return allParams.map(({ node, param }) => ({ node, param }));
   }
 }
