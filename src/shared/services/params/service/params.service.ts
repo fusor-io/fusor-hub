@@ -96,6 +96,8 @@ export class ParamsService {
       const item = this._writeCache[key];
       if (!item.isFlushed) {
         await this._writeParamValue(item.nodeId, item.paramId, item.value);
+        item.isFlushed = true;
+        item.lastWriteTime = Date.now();
       }
     }
     this._logger.log('...write cache flushed');
@@ -166,7 +168,7 @@ export class ParamsService {
     return results || [];
   }
 
-  async regexpParams(nodeMatch: string, paramMatch: string): Promise<ParamEntry[]> {
+  async regexpParams(nodeMatch?: string, paramMatch?: string): Promise<ParamEntry[]> {
     await this.flushWriteCache();
 
     const results = await this._databaseService.query<ParamEntry>({

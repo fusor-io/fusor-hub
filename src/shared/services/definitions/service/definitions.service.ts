@@ -39,10 +39,7 @@ export class DefinitionsService {
       values: [DEFINITIONS_TABLE_NAME, type],
     });
     const definitions = plainToClass(DefinitionQueryResultDto, results);
-    return (
-      definitions &&
-      definitions.map((definition: DefinitionQueryResultDto<T>) => definition.toModel())
-    );
+    return definitions?.map((definition: DefinitionQueryResultDto<T>) => definition.toModel());
   }
 
   async dumpAllDefinitions(): Promise<CompleteDefinitionQueryResultDto[]> {

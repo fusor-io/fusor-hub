@@ -42,8 +42,12 @@ export class ExportBrokerService {
     } else {
       this._logger.log('Checking definitions...');
 
-      const needReloading = await this._exporter.areDefinitionsUpdated();
-      if (!needReloading) {
+      const [definitionsUpdated, paramListUpdated] = await Promise.all([
+        this._exporter.areDefinitionsUpdated(),
+        this._exporter.areParamListUpdated(),
+      ]);
+
+      if (!definitionsUpdated && !paramListUpdated) {
         this._logger.log('...no updates');
         return;
       }

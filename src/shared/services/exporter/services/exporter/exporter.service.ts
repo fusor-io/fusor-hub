@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DefinitionsService } from 'src/shared/services/definitions/service/definitions.service';
 import { DefinitionQueryResult } from 'src/shared/services/definitions/type';
 import { ParamsService } from 'src/shared/services/params/service/params.service';
+import { NodeParam } from 'src/shared/services/params/type';
 
 import { EXPORTER_DEFINITION_TYPE } from '../../const';
 import {
@@ -31,6 +32,7 @@ export class ExporterService {
   private _isReady = false;
 
   private _definitions: DefinitionQueryResult<ExporterDefinition>[];
+  private _paramsSnapshot: NodeParam[];
 
   constructor(
     private readonly _paramsService: ParamsService,
@@ -90,10 +92,17 @@ export class ExporterService {
     return JSON.stringify(definitions) !== JSON.stringify(oldDefinitions);
   }
 
+  async areParamListUpdated(): Promise<boolean> {
+    const allParams = await this._getParamsSnapshot();
+    return JSON.stringify(allParams) !== JSON.stringify(this._paramsSnapshot);
+  }
+
   private async _instantiateExporters(): Promise<[number, number]> {
     this._definitions = await this._definitionsService.readDefinitions<ExporterDefinition>(
       EXPORTER_DEFINITION_TYPE,
     );
+
+    this._paramsSnapshot = await this._getParamsSnapshot();
 
     const allInstances: ExporterInstance[] = [];
 
@@ -215,5 +224,10 @@ export class ExporterService {
 
   private _key(node: string, param: string): string {
     return `${node}:${param}`;
+  }
+
+  private async _getParamsSnapshot(): Promise<NodeParam[]> {
+    const allParams = await this._paramsService.regexpParams();
+    return allParams.map(({ node, param }) => ({ node, param }));
   }
 }
