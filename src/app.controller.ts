@@ -17,6 +17,6 @@ export class AppController {
 
   @Get("/reload")
   async reload(): Promise<void> {
-    await this._exportBrokerService.reload();
+    await this._exportBrokerService.reload(true);
   }
 }

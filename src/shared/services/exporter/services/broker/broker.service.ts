@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { scheduledJobs, scheduleJob } from 'node-schedule';
+import { LogLevelManagerService } from 'src/shared/services/log-level-manager/service/log-level-manager.service';
 import { ParamsService } from 'src/shared/services/params/service/params.service';
 import { ParamEntry } from 'src/shared/services/params/type';
 
@@ -11,20 +12,22 @@ export class ExportBrokerService {
   constructor(
     private readonly _exporter: ExporterService,
     private readonly _paramsService: ParamsService,
+    private readonly _logLevelManagerService: LogLevelManagerService,
   ) {
     this._paramsService.registerWriteHook((nodeId, paramId) => this.onParamUpdate(nodeId, paramId));
     this._init();
 
     // check if we need reloading exporters each 5 minutes
-    setInterval(() => this._reloadExporters(), 5 * 60 * 1000);
+    setInterval(() => this.reload(), 5 * 60 * 1000);
   }
 
   onParamUpdate(node: string, param: string) {
     this._exporter.exportParam(node, param);
   }
 
-  reload() {
-    this._reloadExporters(true);
+  async reload(forceReload = false): Promise<void> {
+    if (await this._reloadExporters(forceReload))
+      this._logLevelManagerService.scheduleLevelUpdate();
   }
 
   private async _initialParamExport() {
@@ -36,7 +39,7 @@ export class ExportBrokerService {
     this._logger.log('Initial param export complete');
   }
 
-  private async _reloadExporters(forcedReload = false) {
+  private async _reloadExporters(forcedReload = false): Promise<boolean> {
     if (forcedReload) {
       this._logger.log('Reloading exporter');
     } else {
@@ -49,7 +52,7 @@ export class ExportBrokerService {
 
       if (!definitionsUpdated && !paramListUpdated) {
         this._logger.log('...no updates');
-        return;
+        return false;
       }
       this._logger.log('Updates detected, reloading exporter');
     }
@@ -60,6 +63,7 @@ export class ExportBrokerService {
     });
     await this._exporter.loadExporters();
     await this._scheduleJobs();
+    return true;
   }
 
   private async _scheduleJobs(): Promise<void> {
