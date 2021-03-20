@@ -1,6 +1,6 @@
 import { Injectable, Logger, LogLevel } from '@nestjs/common';
-import { scheduleJob } from 'node-schedule';
 
+import { CronService } from '../../cron/service/cron.service';
 import { ParamsService } from '../../params/service/params.service';
 import { HUB_NODE, LOG_LEVEL_MAP, LOG_LEVEL_PARAM } from '../const';
 import { ActiveLogLevel } from '../type';
@@ -10,11 +10,14 @@ export class LogLevelManagerService {
   private _activeLogLevel = ActiveLogLevel.log;
   private readonly _logger = new Logger(this.constructor.name);
 
-  constructor(private readonly _paramsService: ParamsService) {}
+  constructor(
+    private readonly _paramsService: ParamsService,
+    private readonly _cronService: CronService,
+  ) {}
 
   scheduleLevelUpdate(): void {
     this._logger.log('Scheduling log level checker');
-    scheduleJob('Check Log Level', '*/5 * * * * *', () => this.readLogLevel());
+    this._cronService.schedule(this, 'log-manager', '*/5 * * * * *', () => this.readLogLevel());
   }
 
   async readLogLevel(): Promise<void> {

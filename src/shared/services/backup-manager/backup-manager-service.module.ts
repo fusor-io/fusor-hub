@@ -1,11 +1,12 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 
 import { BackupServiceModule } from '../backup/backup-service.module';
+import { CronModule } from '../cron/cron.module';
 import { DefinitionsServiceModule } from '../definitions/definitions-service.module';
 import { BackupManagerService } from './service/backup-manager.service';
 
 @Module({
-  imports: [BackupServiceModule, DefinitionsServiceModule],
+  imports: [BackupServiceModule, DefinitionsServiceModule, CronModule],
   providers: [BackupManagerService],
 })
 export class BackupManagerServiceModule implements OnModuleInit {

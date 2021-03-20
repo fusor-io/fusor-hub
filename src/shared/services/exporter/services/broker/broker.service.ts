@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { scheduledJobs, scheduleJob } from 'node-schedule';
+import { CronService } from 'src/shared/services/cron/service/cron.service';
 import { ParamsService } from 'src/shared/services/params/service/params.service';
 import { ParamEntry } from 'src/shared/services/params/type';
 
@@ -8,11 +8,12 @@ import { ExporterService } from '../exporter/exporter.service';
 @Injectable()
 export class ExportBrokerService {
   private readonly _logger = new Logger(this.constructor.name);
+
   constructor(
     private readonly _exporter: ExporterService,
     private readonly _paramsService: ParamsService,
-  ) // private readonly _logLevelManagerService: LogLevelManagerService,
-  {
+    private readonly _cronService: CronService,
+  ) {
     this._paramsService.registerWriteHook((nodeId, paramId) => this.onParamUpdate(nodeId, paramId));
     this._init();
 
@@ -20,16 +21,15 @@ export class ExportBrokerService {
     setInterval(() => this.reload(), 5 * 60 * 1000);
   }
 
-  onParamUpdate(node: string, param: string) {
+  onParamUpdate(node: string, param: string): void {
     this._exporter.exportParam(node, param);
   }
 
   async reload(forceReload = false): Promise<void> {
     this._reloadExporters(forceReload);
-    // this._logLevelManagerService.scheduleLevelUpdate();
   }
 
-  private async _initialParamExport() {
+  private async _initialParamExport(): Promise<void> {
     this._logger.log('Running initial param export...');
     const allParams: ParamEntry[] = await this._paramsService.filterParams('', '');
     for (const param of allParams) {
@@ -38,7 +38,7 @@ export class ExportBrokerService {
     this._logger.log('Initial param export complete');
   }
 
-  private async _reloadExporters(forcedReload = false): Promise<boolean> {
+  private async _reloadExporters(forcedReload = false): Promise<void> {
     if (forcedReload) {
       this._logger.log('Reloading exporter');
     } else {
@@ -51,18 +51,15 @@ export class ExportBrokerService {
 
       if (!definitionsUpdated && !paramListUpdated) {
         this._logger.log('...no updates');
-        return false;
+        return;
       }
       this._logger.log('Updates detected, reloading exporter');
     }
 
-    Object.keys(scheduledJobs).forEach(jobName => {
-      this._logger.log(`Canceling ${jobName}`);
-      scheduledJobs[jobName].cancel();
-    });
+    this._cronService.cancel(this);
+
     await this._exporter.loadExporters();
     await this._scheduleJobs();
-    return true;
   }
 
   private async _scheduleJobs(): Promise<void> {
@@ -72,16 +69,16 @@ export class ExportBrokerService {
       const schedule = instance?.schedule?.config?.schedule;
 
       this._logger.log(`Scheduling ${instance.id}`);
-      scheduleJob(`exporter:${instance.id}`, schedule, () => {
-        this._exporter.export(instance);
-      });
+      this._cronService.schedule(this, instance.id, schedule, () =>
+        this._exporter.export(instance),
+      );
 
       this._logger.log(`Initial run of ${instance.id}`);
       await this._exporter.export(instance);
     }
   }
 
-  private async _init() {
+  private async _init(): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 5000));
     await this._scheduleJobs();
     await this._initialParamExport();

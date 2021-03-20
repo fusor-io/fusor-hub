@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SchedulerService } from './scheduler.service';
+import { CronService } from './cron.service';
 
-describe('SchedulerService', () => {
-  let service: SchedulerService;
+describe('CronService', () => {
+  let service: CronService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SchedulerService],
+      providers: [CronService],
     }).compile();
 
-    service = module.get<SchedulerService>(SchedulerService);
+    service = module.get<CronService>(CronService);
   });
 
   it('should be defined', () => {

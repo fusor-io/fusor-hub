@@ -11,7 +11,6 @@ import { MsgPackMiddleware } from './shared/middleware/msg-pack-middleware/msg-p
 import { BackupManagerServiceModule } from './shared/services/backup-manager/backup-manager-service.module';
 import { ExporterModule } from './shared/services/exporter/exporter.module';
 import { LogLevelManagerModule } from './shared/services/log-level-manager/log-level-manager.module';
-import { SchedulerModule } from './shared/services/scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -19,7 +18,6 @@ import { SchedulerModule } from './shared/services/scheduler/scheduler.module';
     PrimitiveStorageModule,
     DefinitionsModule,
     GoogleSignInModule,
-    SchedulerModule,
     ExporterModule,
     BackupManagerServiceModule,
     LogLevelManagerModule,

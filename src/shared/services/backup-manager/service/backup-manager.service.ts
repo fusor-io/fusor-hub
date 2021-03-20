@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { scheduleJob } from 'node-schedule';
 
 import { BackupService } from '../../backup/service/backup.service';
+import { CronService } from '../../cron/service/cron.service';
 import { DefinitionsService } from '../../definitions/service/definitions.service';
 import { DEFINITIONS_FILE } from '../const/backup-data-ids.const';
 
@@ -12,12 +12,15 @@ export class BackupManagerService {
   constructor(
     private readonly _backupService: BackupService,
     private readonly _definitionService: DefinitionsService,
+    private readonly _cronService: CronService,
   ) {}
 
   scheduleBackup(): void {
     this._logger.log('Scheduling daily backups to Google Cloud Store');
     // run backup daily at 1:00 AM
-    scheduleJob('Daily backup', { second: 0, minute: 0, hour: 1 }, () => this.backup());
+    this._cronService.schedule(this, 'backup', { second: 0, minute: 0, hour: 1 }, () =>
+      this.backup(),
+    );
   }
 
   async backup(): Promise<void> {
