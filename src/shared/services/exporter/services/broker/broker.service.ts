@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { scheduledJobs, scheduleJob } from 'node-schedule';
-import { LogLevelManagerService } from 'src/shared/services/log-level-manager/service/log-level-manager.service';
 import { ParamsService } from 'src/shared/services/params/service/params.service';
 import { ParamEntry } from 'src/shared/services/params/type';
 
@@ -12,8 +11,8 @@ export class ExportBrokerService {
   constructor(
     private readonly _exporter: ExporterService,
     private readonly _paramsService: ParamsService,
-    private readonly _logLevelManagerService: LogLevelManagerService,
-  ) {
+  ) // private readonly _logLevelManagerService: LogLevelManagerService,
+  {
     this._paramsService.registerWriteHook((nodeId, paramId) => this.onParamUpdate(nodeId, paramId));
     this._init();
 
@@ -26,8 +25,8 @@ export class ExportBrokerService {
   }
 
   async reload(forceReload = false): Promise<void> {
-    if (await this._reloadExporters(forceReload))
-      this._logLevelManagerService.scheduleLevelUpdate();
+    this._reloadExporters(forceReload);
+    // this._logLevelManagerService.scheduleLevelUpdate();
   }
 
   private async _initialParamExport() {
@@ -73,7 +72,7 @@ export class ExportBrokerService {
       const schedule = instance?.schedule?.config?.schedule;
 
       this._logger.log(`Scheduling ${instance.id}`);
-      scheduleJob(instance.id, schedule, () => {
+      scheduleJob(`exporter:${instance.id}`, schedule, () => {
         this._exporter.export(instance);
       });
 
