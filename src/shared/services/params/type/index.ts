@@ -6,3 +6,4 @@ export * from './export.type';
 export * from './write-cache.type';
 export * from './param-entry.type';
 export * from './param-write-hook-fn.type';
+export * from './param-update-event.type';

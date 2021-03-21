@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { BehaviorSubject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { DatabaseService } from 'src/shared/services/database/service/database.service';
-import { ExportType, NodeParam, ParamEntry, WriteCache } from 'src/shared/services/params/type';
+import { ExportType, NodeParam, ParamEntry, ParamUpdateEvent, WriteCache } from 'src/shared/services/params/type';
 import { cleanName } from 'src/shared/utils';
 
 import { WRITE_DELAY } from '../const';
@@ -10,13 +12,17 @@ import { LoggingType, NodeLogging, NodeParamValue, ParamWriteHookFn } from '../t
 @Injectable()
 export class ParamsService {
   private readonly _logger = new Logger(this.constructor.name);
+  private _paramUpdates$ = new BehaviorSubject<ParamUpdateEvent | undefined>(undefined);
 
-  constructor(private readonly _databaseService: DatabaseService) {}
+  public paramUpdates$ = this._paramUpdates$.pipe(filter(data => data !== undefined));
+
+  constructor(private readonly _databaseService: DatabaseService) {
+    this._loadInitialValues();
+  }
 
   private readonly _writeCache: WriteCache = {};
   private readonly _writeHooks: ParamWriteHookFn[] = [];
 
-  // TODO refactor using CQRS
   registerWriteHook(hook: ParamWriteHookFn): void {
     this._writeHooks.push(hook);
   }
@@ -186,11 +192,23 @@ export class ParamsService {
     return `${VALUE_TABLE_PREFIX}:${nodeIdCleaned}:${paramIdCleaned}:${dataType}`;
   }
 
+  private async _loadInitialValues(): Promise<void> {
+    this._logger.log('Emitting all params');
+
+    const allParams = await this.filterParams();
+    for (const { node: nodeId, param: paramId, value } of allParams) {
+      this._paramUpdates$.next({ nodeId, paramId, value });
+    }
+    this._logger.log(`${allParams.length} params emitted`);
+  }
+
   private _getCacheKey(nodeId: string, paramId: string): string {
     return `${paramId}@${nodeId}`;
   }
 
   private async _callWriteHooks(nodeId: string, paramId: string, value: number): Promise<void> {
+    this._paramUpdates$.next({ nodeId, paramId, value });
+
     for (const hook of this._writeHooks) {
       try {
         await hook(nodeId, paramId, value);
