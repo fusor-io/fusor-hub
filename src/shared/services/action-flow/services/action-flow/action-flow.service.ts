@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-
-import { ParamsService } from '../../params/service/params.service';
+import { ParamsService } from 'src/shared/services/params/service/params.service';
 
 @Injectable()
 export class ActionFlowService {

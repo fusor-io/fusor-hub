@@ -1,8 +1,8 @@
 import { combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { EventEmitter, MathOperationFunction } from '../../type';
-import { EventObservable, MathOperationParams } from '../../type/action-flow.type';
+import { EventEmitter, MathOperationFunction } from '../../../services/action-flow/type';
+import { EventObservable, MathOperationParams } from '../../../services/action-flow/type/action-flow.type';
 
 export class MathOperationEmitter implements EventEmitter {
   readonly emitter = combineLatest(
