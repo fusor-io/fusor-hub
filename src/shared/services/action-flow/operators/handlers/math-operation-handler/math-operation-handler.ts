@@ -1,33 +1,54 @@
-import { combineLatest } from 'rxjs';
+import { Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { Expression, Parser, Value } from 'expr-eval';
 import { map } from 'rxjs/operators';
+import { inspect } from 'util';
 
-import { EventEmitter, MathOperationFunction } from '../../../services/action-flow/type';
-import { EventObservable, MathOperationParams } from '../../../services/action-flow/type/action-flow.type';
+import { EventObservable, FlowEventType } from '../../../services/action-flow/type/action-flow.type';
+import { HandlerBase } from '../../handler-base';
+import { MathOperationHandleConfig } from './config';
 
-export class MathOperationEmitter implements EventEmitter {
-  readonly emitter = combineLatest(
-    // convert map to an array:
-    //   { [key: string]: Observable<T> } => Observable<{ key: string, value: T }>[]
-    Object.keys(this._inputs).map(key => {
-      const input = this._inputs[key];
-      return input.pipe(map(({ value }) => ({ key, value })));
-    }),
-  ).pipe(
-    map(values =>
-      // convert back array to a map
-      //   { key: string, value: T }[] => { [key: string]: T }
-      values.reduce((result, { key, value }) => {
-        result[key] = value;
-        return result;
-      }, {} as MathOperationParams),
-    ),
-    map(inputs => ({
-      value: this._function(inputs),
-    })),
-  );
+export const INPUT_IN1 = 'in1';
+export const INPUT_IN2 = 'in2';
+export const INPUT_NAMES = [INPUT_IN1, INPUT_IN2];
+export const OUTPUT_OUT = 'out';
 
-  constructor(
-    private _function: MathOperationFunction,
-    private _inputs: Record<string, EventObservable>,
-  ) {}
+export class MathOperationHandler extends HandlerBase<MathOperationHandleConfig> {
+  private readonly _logger = new Logger(this.constructor.name);
+  readonly inputs: Record<'in1' | 'in2', EventObservable>;
+
+  private _expression: Expression;
+
+  constructor(moduleRef: ModuleRef) {
+    super(moduleRef, INPUT_NAMES);
+  }
+
+  init(config: MathOperationHandleConfig) {
+    const parser = new Parser();
+    this._expression = parser.parse(config.expression);
+  }
+
+  engage(): boolean {
+    if (!this.isFullyWired) return false;
+
+    this.outputs[OUTPUT_OUT] = this._combineInputs().pipe(
+      map((inputs: Record<'in1' | 'in2', FlowEventType>) => ({
+        in1: +inputs.in1 || 0,
+        in2: +inputs.in2 || 0,
+      })),
+      map(inputs => ({ value: this._eval(inputs) })),
+    );
+
+    return true;
+  }
+
+  private _eval(inputs: Value): FlowEventType {
+    try {
+      const result = this._expression.evaluate(inputs);
+      return ['boolean', 'number'].includes(typeof result) ? result : undefined;
+    } catch (error) {
+      this._logger.error(`Failed math evaluation: ${inspect(error)}`);
+      return undefined;
+    }
+  }
 }

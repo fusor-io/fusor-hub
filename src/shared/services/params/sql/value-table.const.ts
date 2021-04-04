@@ -1,4 +1,4 @@
-import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_SENSOR_ID_LENGTH } from 'src/shared/const';
+import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_SENSOR_ID_LENGTH } from '../../../const';
 
 export const LOG_TABLE_DOUBLE = `
 CREATE TABLE IF NOT EXISTS \`#\` (

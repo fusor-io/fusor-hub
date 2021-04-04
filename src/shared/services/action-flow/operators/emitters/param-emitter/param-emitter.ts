@@ -1,17 +1,19 @@
-import { Inject } from '@nestjs/common';
 import { filter } from 'rxjs/operators';
 
-import { ActionFlowService } from '../../../services/action-flow/action-flow.service';
-import { EventEmitter, EventObservable } from '../../../services/action-flow/type';
+import { ParamsService } from '../../../../params';
+import { EmitterBase } from '../../emitter-base';
+import { ParamEmitterConfig } from './config';
 
-export class ParamEmitterOperator implements EventEmitter {
-  @Inject() private readonly _actionFlowService: ActionFlowService;
+export const OUTPUT_PARAM = 'out';
 
-  outputs: Record<string, EventObservable> = {};
+export class ParamEmitterOperator extends EmitterBase<ParamEmitterConfig> {
+  private _paramsService!: ParamsService;
 
-  constructor(nodeId: string, paramId: string) {
-    this.outputs['param'] = this._actionFlowService.params.pipe(
-      filter(event => event.nodeId === nodeId && event.paramId === paramId),
+  init(config: ParamEmitterConfig) {
+    this._paramsService = this._moduleRef.get(ParamsService);
+
+    this.outputs[OUTPUT_PARAM] = this._paramsService.paramUpdates$.pipe(
+      filter(event => event.nodeId === config.nodeId && event.paramId === config.paramId),
     );
   }
 }

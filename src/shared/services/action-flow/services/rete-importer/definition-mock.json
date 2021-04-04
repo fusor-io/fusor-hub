@@ -1,0 +1,104 @@
+{
+  "id": "demo@0.2.0",
+  "nodes": {
+    "1": {
+      "id": 1,
+      "data": {
+        "nodeId": "node1",
+        "paramId": "param1"
+      },
+      "inputs": {},
+      "outputs": {
+        "out": {
+          "connections": [
+            {
+              "node": 3,
+              "input": "in1",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [80, 200],
+      "name": "EmitParameter"
+    },
+    "2": {
+      "id": 2,
+      "data": {
+        "nodeId": "node1",
+        "paramId": "param2"
+      },
+      "inputs": {},
+      "outputs": {
+        "out": {
+          "connections": [
+            {
+              "node": 3,
+              "input": "in2",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [80, 200],
+      "name": "EmitParameter"
+    },
+    "3": {
+      "id": 3,
+      "data": {
+        "expression": "in1 + in2"
+      },
+      "inputs": {
+        "in1": {
+          "connections": [
+            {
+              "node": 1,
+              "output": "out",
+              "data": {}
+            }
+          ]
+        },
+        "in2": {
+          "connections": [
+            {
+              "node": 2,
+              "output": "out",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "outputs": {
+        "out": {
+          "connections": [
+            {
+              "node": 4,
+              "input": "in",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [500, 240],
+      "name": "HandlerMath"
+    },
+    "4": {
+      "id": 4,
+      "data": {},
+      "inputs": {
+        "in": {
+          "connections": [
+            {
+              "node": 3,
+              "output": "out",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "outputs": {},
+      "position": [500, 240],
+      "name": "ActionLog"
+    }
+  }
+}

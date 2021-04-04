@@ -3,7 +3,7 @@ export interface ReteDocument {
   nodes: Record<string, ReteNode>;
 }
 
-export interface ReteNode<T = unknown> {
+export interface ReteNode<T = any> {
   name: string;
   id: number;
   data: T;
@@ -20,13 +20,13 @@ export interface ReteOutput {
   connections: ReteOutputConnection[];
 }
 
-export interface ReteInputConnection<T = unknown> {
+export interface ReteInputConnection<T = any> {
   node: number;
   output: string;
   data: T;
 }
 
-export interface ReteOutputConnection<T = unknown> {
+export interface ReteOutputConnection<T = any> {
   node: number;
   input: string;
   data: T;
