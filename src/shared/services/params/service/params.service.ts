@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { inspect } from 'util';
 
 import { cleanName } from '../../../utils';
 import { DatabaseService } from '../../database/service/database.service';
@@ -16,9 +17,7 @@ export class ParamsService {
 
   public paramUpdates$ = this._paramUpdates$.pipe(filter(data => data !== undefined));
 
-  constructor(private readonly _databaseService: DatabaseService) {
-    this._loadInitialValues();
-  }
+  constructor(private readonly _databaseService: DatabaseService) {}
 
   private readonly _writeCache: WriteCache = {};
   private readonly _writeHooks: ParamWriteHookFn[] = [];
@@ -79,6 +78,20 @@ export class ParamsService {
     }
 
     this._callWriteHooks(nodeId, paramId, value);
+  }
+
+  async emitCurrentValues(): Promise<void> {
+    this._logger.log('Emitting all params');
+
+    try {
+      const allParams = await this.filterParams();
+      for (const { node: nodeId, param: paramId, value } of allParams) {
+        this._paramUpdates$.next({ nodeId, paramId, value });
+      }
+      this._logger.log(`${allParams.length} params emitted`);
+    } catch (error) {
+      this._logger.error(`Emitting failed: ${inspect(error)}`);
+    }
   }
 
   private async _writeParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
@@ -190,16 +203,6 @@ export class ParamsService {
     const paramIdCleaned = cleanName(sensorId);
     const dataType = loggingType === LoggingType.int ? 'i' : 'd';
     return `${VALUE_TABLE_PREFIX}:${nodeIdCleaned}:${paramIdCleaned}:${dataType}`;
-  }
-
-  private async _loadInitialValues(): Promise<void> {
-    this._logger.log('Emitting all params');
-
-    const allParams = await this.filterParams();
-    for (const { node: nodeId, param: paramId, value } of allParams) {
-      this._paramUpdates$.next({ nodeId, paramId, value });
-    }
-    this._logger.log(`${allParams.length} params emitted`);
   }
 
   private _getCacheKey(nodeId: string, paramId: string): string {

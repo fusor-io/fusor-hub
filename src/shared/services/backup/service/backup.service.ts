@@ -68,7 +68,7 @@ export class BackupService {
           const publicUrl = `https://storage.googleapis.com/${this._bucket.name}/${blob.name}`;
           this._logger.log(`File "${publicUrl}" created`);
           this._logger.log(`${buffer.byteLength} bytes written`);
-          resolve();
+          resolve(true);
         });
 
         blobStream.end(buffer);

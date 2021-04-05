@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { inspect } from 'util';
 
+import { CronService } from '../../../cron';
 import { DefinitionsService, DefinitionType } from '../../../definitions';
+import { ParamsService } from '../../../params';
 import {
+  FlowSet,
+  FlowSets,
   isMathOperationHandleConfig,
   isParamEmitterConfig,
   LogWriterOperator,
@@ -29,61 +34,124 @@ const REGISTER: Record<string, OperatorManifest> = {
 
 @Injectable()
 export class ReteImporterService {
-  private _operators: Record<string, Operator>;
-  private _buildQueue: BuildQueue;
+  private readonly _logger = new Logger(this.constructor.name);
+
+  private _lastDefinitions = '';
+  private _flows: FlowSets = [];
+  private _flowSet: FlowSet;
+  private _builtQueue: BuildQueue;
 
   constructor(
     private readonly _moduleRef: ModuleRef,
     private readonly _definitionsService: DefinitionsService,
+    private readonly _cronService: CronService,
+    private readonly _paramsService: ParamsService,
   ) {}
 
-  async import(definitionId: string): Promise<boolean> {
-    const definition = await this._definitionsService.readDefinition<ReteDocument>(
-      DefinitionType.flow,
-      definitionId,
-    );
-    if (!definition?.definition) return false;
-
-    const reteDefinition = definition.definition;
-    return this.buildFlow(reteDefinition);
+  async schedule(): Promise<void> {
+    this._logger.log(`Scheduling flow import`);
+    await this.import();
+    this._cronService.schedule(this, 'rete', '*/5 * * * *', () => this.import());
   }
 
+  /**
+   * Import all flow definitions. Can be called safely many times, to re-import them.
+   * After the import add successfully imported flows are active instantly.
+   */
+  async import(): Promise<void> {
+    try {
+      this._logger.log('Importing flows');
+
+      const definitions = await this._definitionsService.readDefinitions<ReteDocument>(
+        DefinitionType.flow,
+      );
+
+      // check if we need reimport
+      const definitionsJson = JSON.stringify(definitions);
+      if (this._lastDefinitions === definitionsJson) {
+        this._logger.log('No updates, skipping...');
+        return;
+      }
+      this._lastDefinitions = definitionsJson;
+
+      // release resources on each run, so that we can re-import on a regular base
+      this._destroy();
+
+      let count = 0;
+
+      for (const definition of definitions || []) {
+        if (!definition?.definition) continue;
+        const reteDefinition = definition.definition;
+
+        if (this.buildFlow(reteDefinition)) {
+          this._flows.push(this._flowSet);
+          this._logger.log(`Flow definition ${definition.key} loaded`);
+          count++;
+        } else {
+          Object.keys(this._flowSet).forEach(key => this._flowSet[key].destroy());
+          this._logger.warn(`Flow definition ${definition.key} failed to load, skipping...`);
+        }
+      }
+
+      this._flowSet = undefined;
+
+      await this._paramsService.emitCurrentValues();
+
+      this._logger.log(`Imported ${count} flows`);
+    } catch (error) {
+      this._logger.error(`Import failed: ${inspect(error)}`);
+    }
+  }
+
+  /**
+   * Take Rete document and build flow based on it
+   */
   buildFlow(rete: ReteDocument): boolean {
     const nodes = rete.nodes;
     const keys = Object.keys(nodes);
-    this._buildQueue = keys.map(key => ({
+
+    // Build the queue of operators to be instantiated
+    this._builtQueue = keys.map(key => ({
       node: nodes[key],
       operator: undefined,
     }));
-    this._operators = {};
+    this._flowSet = {};
 
     let nodeCount = keys.length;
     let hasUpdates = false;
 
+    // Some operators may miss inputs be ready at this time
+    // We iterate many times to assure all inputs are ready
     do {
       this.instantiate();
-      hasUpdates = this._buildQueue.length < nodeCount;
-      nodeCount = this._buildQueue.length;
+      hasUpdates = this._builtQueue.length < nodeCount;
+      nodeCount = this._builtQueue.length;
     } while (hasUpdates && nodeCount > 0);
 
     return nodeCount === 0;
   }
 
+  /**
+   * Instantiate operators satisfying their input requirements
+   */
   instantiate(): void {
-    this._buildQueue = this._buildQueue.filter(node => {
+    this._builtQueue = this._builtQueue.filter(node => {
       const operator = this.instantiateOperator(node.node);
 
       if (operator === undefined) {
         // unable instantiate, leave for the next cycle
         return true;
       } else {
-        this._operators[node.node.id] = operator;
+        this._flowSet[node.node.id] = operator;
         // instantiated successfully, remove from queue
         return false;
       }
     });
   }
 
+  /**
+   * Instantiate single operator if all inputs are already ready
+   */
   instantiateOperator(node: ReteNode): Operator | undefined {
     // validate that all (if any) inputs has outputs ready from already instantiated operators
     if (!this._allInputsAvailable(node)) return undefined;
@@ -107,6 +175,9 @@ export class ReteImporterService {
     return undefined;
   }
 
+  /**
+   * Create new operator instance
+   */
   newOperator(manifest: OperatorManifest): Operator {
     return new manifest.Class(this._moduleRef);
   }
@@ -114,7 +185,6 @@ export class ReteImporterService {
   /**
    * Take ReteNode and check if we have all Operators ready
    * to provide outputs for ReteNode inputs.
-   * @param node
    */
   private _allInputsAvailable(node: ReteNode): boolean {
     const inputs = node.inputs;
@@ -178,7 +248,24 @@ export class ReteImporterService {
     // validate input definition
     if (!sourceNodeId || !sourceOutputName) return undefined;
 
-    const operator = this._operators[sourceNodeId];
+    const operator = this._flowSet[sourceNodeId];
     return operator && isEventEmitter(operator) && operator.outputs[sourceOutputName];
+  }
+
+  /**
+   * Destroy operators of provided flow
+   */
+  private _destroyFlow(flowSet: FlowSet): void {
+    // Destroying operator unsubscribes subscriptions and releases any other resources
+    Object.keys(flowSet).forEach(key => this._flowSet[key].destroy());
+  }
+
+  /**
+   * Destroy all flows
+   */
+  private _destroy(): void {
+    for (const flowSet of this._flows) this._destroyFlow(flowSet);
+    this._flows = [];
+    this._flowSet = undefined;
   }
 }

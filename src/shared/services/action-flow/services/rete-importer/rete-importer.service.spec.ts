@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BehaviorSubject } from 'rxjs';
 
+import { CronService } from '../../../cron';
 import { DefinitionsService } from '../../../definitions';
 import { ParamsService, ParamUpdateEvent } from '../../../params';
 import * as reteMock from './definition-mock.json';
@@ -24,12 +25,16 @@ describe('ReteImporterService', () => {
         {
           provide: DefinitionsService,
           useValue: {
-            readDefinition: () => ({ definition: reteMock }),
+            readDefinitions: () => [{ key: 'test', definition: reteMock }],
           },
         },
         {
           provide: ParamsService,
-          useValue: { paramUpdates$ },
+          useValue: { paramUpdates$, emitCurrentValues: () => null },
+        },
+        {
+          provide: CronService,
+          useValue: { schedule: () => null },
         },
       ],
     }).compile();
@@ -43,22 +48,46 @@ describe('ReteImporterService', () => {
 
   it('should init', async () => {
     const buildFlowFn = jest.spyOn(service, 'buildFlow').mockReturnValue(true);
-    const status = await service.import('test');
+    expect(await service.import()).toBeUndefined;
     expect(buildFlowFn).toBeCalledWith(reteMock);
-    expect(status).toBe(true);
+    expect(Object.keys(service[`_flows`]).length).toEqual(1);
+  });
+
+  it('should skip re-init if definitions are unchanged', async () => {
+    const buildFlowFn = jest.spyOn(service, 'buildFlow').mockReturnValue(true);
+    await service.import();
+    expect(buildFlowFn).toBeCalledWith(reteMock);
+
+    buildFlowFn.mockClear();
+    await service.import();
+    expect(buildFlowFn).not.toBeCalled();
   });
 
   it('should build', async () => {
     const status = service.buildFlow(reteMock as any);
     expect(status).toBe(true);
-    expect(Object.keys(service[`_operators`]).length).toEqual(4);
+    expect(Object.keys(service[`_flowSet`]).length).toEqual(4);
   });
 
   it('should run', async () => {
     service.buildFlow(reteMock as any);
-    const logEventFn = jest.spyOn(service[`_operators`]['4'] as any, '_logEvent');
+    const logEventFn = jest.spyOn(service[`_flowSet`]['4'] as any, '_logEvent');
     paramUpdates$.next({ nodeId: 'node1', paramId: 'param1', value: 1 });
     paramUpdates$.next({ nodeId: 'node1', paramId: 'param2', value: 2 });
     expect(logEventFn).toBeCalledWith({ value: 3 });
+  });
+
+  it('should schedule', async () => {
+    const cron = module.get<CronService>(CronService);
+    const scheduleFn = jest.spyOn(cron, 'schedule');
+    await service.schedule();
+    expect(scheduleFn).toBeCalled();
+  });
+
+  it('should destroy', async () => {
+    const status = service.buildFlow(reteMock as any);
+    service[`_destroy`]();
+    expect(service[`_flows`].length).toEqual(0);
+    expect(service[`_flowSet`]).toBeUndefined;
   });
 });
