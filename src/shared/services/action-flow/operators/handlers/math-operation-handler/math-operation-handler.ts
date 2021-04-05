@@ -7,11 +7,9 @@ import { inspect } from 'util';
 import { EventObservable, FlowEventType } from '../../../services/action-flow/type/action-flow.type';
 import { HandlerBase } from '../../handler-base';
 import { MathOperationHandleConfig } from './config';
+import { INPUT_NAMES, OUTPUT_OUT } from './const';
 
-export const INPUT_IN1 = 'in1';
-export const INPUT_IN2 = 'in2';
-export const INPUT_NAMES = [INPUT_IN1, INPUT_IN2];
-export const OUTPUT_OUT = 'out';
+
 
 export class MathOperationHandler extends HandlerBase<MathOperationHandleConfig> {
   private readonly _logger = new Logger(this.constructor.name);

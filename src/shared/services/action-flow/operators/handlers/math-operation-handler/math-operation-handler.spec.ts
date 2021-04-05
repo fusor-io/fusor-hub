@@ -1,7 +1,8 @@
 import { BehaviorSubject } from 'rxjs';
 
 import { FlowEvent } from '../../../services/action-flow';
-import { INPUT_IN1, INPUT_IN2, INPUT_NAMES, MathOperationHandler, OUTPUT_OUT } from './math-operation-handler';
+import { INPUT_IN1, INPUT_IN2, INPUT_NAMES, OUTPUT_OUT } from './const';
+import { MathOperationHandler } from './math-operation-handler';
 
 describe('MathOperation', () => {
   let mathOperation: MathOperationHandler;
@@ -85,20 +86,4 @@ describe('MathOperation', () => {
       expect(errorFn).toBeCalled();
     });
   });
-
-  // it('should engage', () => {
-  //   const eventSubscriptionFn = jest.spyOn(<any>mathOperation, '_eventSubscription');
-  //   mathOperation.attachInput(INPUT_IN, emitterMock);
-
-  //   expect(mathOperation.engage()).toBe(true);
-  //   expect(eventSubscriptionFn).toHaveBeenCalled();
-  // });
-
-  // it('should log value', () => {
-  //   const logEventFn = jest.spyOn(<any>mathOperation, '_logEvent');
-  //   mathOperation.attachInput(INPUT_IN, emitterMock);
-  //   mathOperation.engage();
-
-  //   expect(logEventFn).toHaveBeenCalledWith(valueMock);
-  // });
 });
