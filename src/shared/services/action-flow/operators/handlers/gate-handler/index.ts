@@ -1,1 +1,1 @@
-export * from './gate-operation-handler';
+export * from './gate-handler';

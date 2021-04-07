@@ -46,7 +46,7 @@
     "3": {
       "id": 3,
       "data": {
-        "expression": "in1 + in2"
+        "expression": "in1 > in2"
       },
       "inputs": {
         "in1": {
@@ -89,8 +89,8 @@
         "in": {
           "connections": [
             {
-              "node": 3,
-              "output": "out",
+              "node": 5,
+              "output": "value",
               "data": {}
             }
           ]
@@ -99,6 +99,43 @@
       "outputs": {},
       "position": [500, 240],
       "name": "ActionLog"
-    }
+    },
+    "5": {
+      "id": 5,
+      "data": {},
+      "inputs": {
+        "value": {
+          "connections": [
+            {
+              "node": 1,
+              "output": "out",
+              "data": {}
+            }
+          ]
+        },
+        "gate": {
+          "connections": [
+            {
+              "node": 3,
+              "output": "out",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "outputs": {
+        "value": {
+          "connections": [
+            {
+              "node": 4,
+              "input": "in",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [510, 250],
+      "name": "HandlerGate"
+    }    
   }
 }

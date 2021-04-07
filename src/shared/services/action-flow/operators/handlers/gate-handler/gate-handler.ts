@@ -1,12 +1,12 @@
 import { ModuleRef } from '@nestjs/core';
 import { combineLatest } from 'rxjs';
-import { delay, filter, map } from 'rxjs/operators';
+import { filter, map, startWith, take, withLatestFrom } from 'rxjs/operators';
 
 import { EventObservable } from '../../../services/action-flow/type/action-flow.type';
 import { HandlerBase } from '../../handler-base';
 import { INPUT_NAMES, OUTPUT_OUT } from './const';
 
-export class GateOperationHandler extends HandlerBase {
+export class GateHandlerOperator extends HandlerBase {
   readonly inputs: Record<'value' | 'gate', EventObservable>;
 
   constructor(moduleRef: ModuleRef) {
@@ -17,13 +17,13 @@ export class GateOperationHandler extends HandlerBase {
     if (!this.isFullyWired) return false;
 
     this.outputs[OUTPUT_OUT] = combineLatest([
-      this.inputs.gate,
-      // Postpone for the next JS cycle
-      // to be sure that gate value comes first
-      this.inputs.value.pipe(delay(0)),
+      this.inputs.value,
+      this.inputs.gate.pipe(take(1)), // wait until gate receives first value
     ]).pipe(
-      filter(([gate]) => !!gate.value),
-      map(([, { value }]) => ({ value })),
+      map(([value]) => value),
+      withLatestFrom(this.inputs.gate.pipe(startWith({ value: true }))),
+      filter(([, gate]) => !!gate.value),
+      map(([{ value }]) => ({ value })),
     );
 
     return true;

@@ -8,7 +8,8 @@ import { ParamsService } from '../../../params';
 import {
   FlowSet,
   FlowSets,
-  isMathOperationHandleConfig,
+  GateHandlerOperator,
+  isMathOperationHandlerConfig,
   isParamEmitterConfig,
   LogWriterOperator,
   MathOperationHandler,
@@ -27,9 +28,10 @@ export interface OperatorManifest {
 }
 
 const REGISTER: Record<string, OperatorManifest> = {
-  ActionLog: { Class: LogWriterOperator },
-  HandlerMath: { Class: MathOperationHandler, configGuard: isMathOperationHandleConfig },
   EmitParameter: { Class: ParamEmitterOperator, configGuard: isParamEmitterConfig },
+  HandlerMath: { Class: MathOperationHandler, configGuard: isMathOperationHandlerConfig },
+  HandlerGate: { Class: GateHandlerOperator },
+  ActionLog: { Class: LogWriterOperator },
 };
 
 @Injectable()

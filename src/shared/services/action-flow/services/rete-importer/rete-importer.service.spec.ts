@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BehaviorSubject } from 'rxjs';
 
+import { sleep } from '../../../../../shared/utils/sleep';
 import { CronService } from '../../../cron';
 import { DefinitionsService } from '../../../definitions';
 import { ParamsService, ParamUpdateEvent } from '../../../params';
@@ -66,15 +67,22 @@ describe('ReteImporterService', () => {
   it('should build', async () => {
     const status = service.buildFlow(reteMock as any);
     expect(status).toBe(true);
-    expect(Object.keys(service[`_flowSet`]).length).toEqual(4);
+    expect(Object.keys(service[`_flowSet`]).length).toEqual(5);
   });
 
   it('should run', async () => {
     service.buildFlow(reteMock as any);
     const logEventFn = jest.spyOn(service[`_flowSet`]['4'] as any, '_logEvent');
+
     paramUpdates$.next({ nodeId: 'node1', paramId: 'param1', value: 1 });
+    await sleep(0);
     paramUpdates$.next({ nodeId: 'node1', paramId: 'param2', value: 2 });
-    expect(logEventFn).toBeCalledWith({ value: 3 });
+    await sleep(0);
+    paramUpdates$.next({ nodeId: 'node1', paramId: 'param1', value: 42 });
+    await sleep(0);
+
+    expect(logEventFn).toBeCalledTimes(1);
+    expect(logEventFn).toBeCalledWith({ value: 42 });
   });
 
   it('should schedule', async () => {
