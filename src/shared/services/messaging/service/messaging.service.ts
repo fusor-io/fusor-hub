@@ -4,6 +4,11 @@ import { inspect } from 'util';
 
 import { Config } from '../../../../shared/type';
 
+/**
+ * Implements interface to Messente service
+ * @see https://messente.com/
+ */
+
 @Injectable()
 export class MessagingService {
   private readonly _logger = new Logger(this.constructor.name);
