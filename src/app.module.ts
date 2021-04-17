@@ -7,6 +7,7 @@ import { DefinitionsModule } from './features/definitions/definitions.module';
 import { GoogleSignInModule } from './features/google-sign-in/google-sign-in.module';
 import { NodeController } from './features/primitive-storage/controller/node/node.controller';
 import { PrimitiveStorageModule } from './features/primitive-storage/primitive-storage.module';
+import { SmsModule } from './features/sms/sms.module';
 import { MsgPackMiddleware } from './shared/middleware/msg-pack-middleware/msg-pack-middleware';
 import { ActionFlowModule } from './shared/services/action-flow/action-flow.module';
 import { BackupManagerServiceModule } from './shared/services/backup-manager/backup-manager-service.module';
@@ -23,6 +24,7 @@ import { LogLevelManagerModule } from './shared/services/log-level-manager/log-l
     BackupManagerServiceModule,
     LogLevelManagerModule,
     ActionFlowModule,
+    SmsModule
   ],
   controllers: [AppController],
   providers: [AppService],

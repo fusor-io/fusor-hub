@@ -3,9 +3,11 @@
     "cSpell.words": [
         "Configurator",
         "IFTTT",
+        "MESSENTE",
         "fusor",
         "iogateway",
-        "jsonata"
+        "jsonata",
+        "omni"
     ],
     "debug.javascript.autoAttachFilter": "onlyWithFlag"
 }
