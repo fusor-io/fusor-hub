@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import slug = require('slug');
 import { inspect } from 'util';
 
 import { CronService } from '../../../cron';
 import { DefinitionsService, DefinitionType } from '../../../definitions';
 import { ParamsService } from '../../../params';
 import {
+  ChangeCountHandlerOperator,
   FlowSet,
   FlowSets,
   GateHandlerOperator,
@@ -28,10 +30,11 @@ export interface OperatorManifest {
 }
 
 const REGISTER: Record<string, OperatorManifest> = {
-  EmitParameter: { Class: ParamEmitterOperator, configGuard: isParamEmitterConfig },
-  HandlerMath: { Class: MathOperationHandler, configGuard: isMathOperationHandlerConfig },
-  HandlerGate: { Class: GateHandlerOperator },
-  ActionLog: { Class: LogWriterOperator },
+  'emitter-param': { Class: ParamEmitterOperator, configGuard: isParamEmitterConfig },
+  'handler-math': { Class: MathOperationHandler, configGuard: isMathOperationHandlerConfig },
+  'handler-gate': { Class: GateHandlerOperator },
+  'handler-change-count': { Class: ChangeCountHandlerOperator },
+  'observer-logger': { Class: LogWriterOperator },
 };
 
 @Injectable()
@@ -158,7 +161,7 @@ export class ReteImporterService {
     // validate that all (if any) inputs has outputs ready from already instantiated operators
     if (!this._allInputsAvailable(node)) return undefined;
 
-    const manifest = REGISTER[node.name];
+    const manifest = REGISTER[slug(node.name)];
     if (!manifest) return undefined;
     if (manifest.configGuard && !manifest.configGuard(node.data)) return undefined;
 

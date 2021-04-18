@@ -20,7 +20,7 @@
         }
       },
       "position": [80, 200],
-      "name": "EmitParameter"
+      "name": "Emitter: Param"
     },
     "2": {
       "id": 2,
@@ -41,7 +41,7 @@
         }
       },
       "position": [80, 200],
-      "name": "EmitParameter"
+      "name": "Emitter: Param"
     },
     "3": {
       "id": 3,
@@ -80,7 +80,7 @@
         }
       },
       "position": [500, 240],
-      "name": "HandlerMath"
+      "name": "Handler: Math"
     },
     "4": {
       "id": 4,
@@ -90,7 +90,7 @@
           "connections": [
             {
               "node": 5,
-              "output": "value",
+              "output": "out",
               "data": {}
             }
           ]
@@ -98,13 +98,13 @@
       },
       "outputs": {},
       "position": [500, 240],
-      "name": "ActionLog"
+      "name": "Observer: Logger"
     },
     "5": {
       "id": 5,
       "data": {},
       "inputs": {
-        "value": {
+        "in": {
           "connections": [
             {
               "node": 1,
@@ -124,7 +124,7 @@
         }
       },
       "outputs": {
-        "value": {
+        "out": {
           "connections": [
             {
               "node": 4,
@@ -135,7 +135,7 @@
         }
       },
       "position": [510, 250],
-      "name": "HandlerGate"
+      "name": "Handler: Gate"
     }    
   }
 }

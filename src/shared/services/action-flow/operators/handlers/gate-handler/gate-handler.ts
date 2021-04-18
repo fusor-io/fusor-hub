@@ -7,7 +7,7 @@ import { HandlerBase } from '../../handler-base';
 import { INPUT_NAMES, OUTPUT_OUT } from './const';
 
 export class GateHandlerOperator extends HandlerBase {
-  readonly inputs: Record<'value' | 'gate', EventObservable>;
+  readonly inputs: Record<'in' | 'gate', EventObservable>;
 
   constructor(moduleRef: ModuleRef) {
     super(moduleRef, INPUT_NAMES);
@@ -17,7 +17,7 @@ export class GateHandlerOperator extends HandlerBase {
     if (!this.isFullyWired) return false;
 
     this.outputs[OUTPUT_OUT] = combineLatest([
-      this.inputs.value,
+      this.inputs.in,
       this.inputs.gate.pipe(take(1)), // wait until gate receives first value
     ]).pipe(
       map(([value]) => value),
