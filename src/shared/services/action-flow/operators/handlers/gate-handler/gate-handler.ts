@@ -2,7 +2,7 @@ import { ModuleRef } from '@nestjs/core';
 import { combineLatest } from 'rxjs';
 import { filter, map, startWith, take, withLatestFrom } from 'rxjs/operators';
 
-import { EventObservable } from '../../../services/action-flow/type/action-flow.type';
+import { EventObservable } from '../../../services/action-flow';
 import { HandlerBase } from '../../handler-base';
 import { INPUT_NAMES, OUTPUT_OUT } from './const';
 

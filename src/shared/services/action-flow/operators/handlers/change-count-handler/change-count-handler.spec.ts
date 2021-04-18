@@ -90,6 +90,7 @@ describe('ChangeCountHandlerOperator', () => {
       await sleep();
 
       expect(result).toEqual(3);
+      subscription.unsubscribe();
     });
   });
 });

@@ -1,7 +1,8 @@
 import { BehaviorSubject } from 'rxjs';
 
 import { FlowEvent } from '../../../services/action-flow';
-import { INPUT_IN, LogWriterOperator } from './log-writer';
+import { INPUT_IN } from './const';
+import { LogWriterOperator } from './log-writer';
 
 describe('LogWriter', () => {
   let logWriter: LogWriterOperator;

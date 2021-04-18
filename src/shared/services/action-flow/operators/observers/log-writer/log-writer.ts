@@ -4,8 +4,7 @@ import { Subscription } from 'rxjs';
 
 import { FlowEvent } from '../../../services/action-flow';
 import { ObserverBase } from '../../observer-base';
-
-export const INPUT_IN = 'in';
+import { INPUT_IN } from './const';
 
 export class LogWriterOperator extends ObserverBase {
   private readonly _logger = new Logger(this.constructor.name);

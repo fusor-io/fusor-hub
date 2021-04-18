@@ -4,14 +4,14 @@ import { Expression, Parser, Value } from 'expr-eval';
 import { map } from 'rxjs/operators';
 import { inspect } from 'util';
 
-import { EventObservable, FlowEventType } from '../../../services/action-flow/type/action-flow.type';
+import { EventObservable, FlowEventType } from '../../../services/action-flow';
 import { HandlerBase } from '../../handler-base';
-import { MathOperationHandleConfig } from './config';
+import { MathOperationHandlerConfig } from './config';
 import { INPUT_NAMES, OUTPUT_OUT } from './const';
 
 
 
-export class MathOperationHandler extends HandlerBase<MathOperationHandleConfig> {
+export class MathOperationHandler extends HandlerBase<MathOperationHandlerConfig> {
   private readonly _logger = new Logger(this.constructor.name);
   readonly inputs: Record<'in1' | 'in2', EventObservable>;
 
@@ -21,7 +21,7 @@ export class MathOperationHandler extends HandlerBase<MathOperationHandleConfig>
     super(moduleRef, INPUT_NAMES);
   }
 
-  init(config: MathOperationHandleConfig) {
+  init(config: MathOperationHandlerConfig) {
     const parser = new Parser();
     this._expression = parser.parse(config.expression);
   }

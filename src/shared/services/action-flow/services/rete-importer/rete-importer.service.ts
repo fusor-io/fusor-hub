@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import slug = require('slug');
+import * as slug from 'slug';
 import { inspect } from 'util';
 
 import { CronService } from '../../../cron';
@@ -8,33 +8,34 @@ import { DefinitionsService, DefinitionType } from '../../../definitions';
 import { ParamsService } from '../../../params';
 import {
   ChangeCountHandlerOperator,
+  DistinctHandlerOperator,
   FlowSet,
   FlowSets,
   GateHandlerOperator,
   isMathOperationHandlerConfig,
   isParamEmitterConfig,
+  isSmsSenderConfig,
+  isThrottleHandlerConfig,
   LogWriterOperator,
   MathOperationHandler,
   ObserverBase,
   Operator,
   ParamEmitterOperator,
+  SmsSenderOperator,
+  ThrottleHandlerOperator,
 } from '../../operators';
 import { EventObservable, isEventEmitter, isEventObserver } from '../action-flow';
-import { ReteDocument } from './type';
-import { BuildQueue } from './type/build.type';
-import { ReteInputConnection, ReteNode } from './type/rete.model';
+import { BuildQueue, OperatorManifest, ReteDocument, ReteInputConnection, ReteNode } from './type';
 
-export interface OperatorManifest {
-  Class: { new (ref: ModuleRef): Operator };
-  configGuard?: (config: any) => boolean;
-}
-
-const REGISTER: Record<string, OperatorManifest> = {
+const REGISTRY: Record<string, OperatorManifest> = {
   'emitter-param': { Class: ParamEmitterOperator, configGuard: isParamEmitterConfig },
   'handler-math': { Class: MathOperationHandler, configGuard: isMathOperationHandlerConfig },
   'handler-gate': { Class: GateHandlerOperator },
   'handler-change-count': { Class: ChangeCountHandlerOperator },
+  'handler-distinct': { Class: DistinctHandlerOperator },
+  'handler-throttle': { Class: ThrottleHandlerOperator, configGuard: isThrottleHandlerConfig },
   'observer-logger': { Class: LogWriterOperator },
+  'observer-sms': { Class: SmsSenderOperator, configGuard: isSmsSenderConfig },
 };
 
 @Injectable()
@@ -161,7 +162,7 @@ export class ReteImporterService {
     // validate that all (if any) inputs has outputs ready from already instantiated operators
     if (!this._allInputsAvailable(node)) return undefined;
 
-    const manifest = REGISTER[slug(node.name)];
+    const manifest = REGISTRY[slug(node.name)];
     if (!manifest) return undefined;
     if (manifest.configGuard && !manifest.configGuard(node.data)) return undefined;
 
