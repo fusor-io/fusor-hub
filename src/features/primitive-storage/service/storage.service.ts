@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AggregatesService } from 'src/shared/services/aggregates/service/aggregates.service';
-import { AggregateView } from 'src/shared/services/aggregates/type';
-import { ParamsService } from 'src/shared/services/params/service/params.service';
-import { LoggingType } from 'src/shared/services/params/type';
-import { cleanName } from 'src/shared/utils';
 
+import { AggregatesService, AggregateView } from '../../../shared/services/aggregates';
+import { LoggingType, ParamsService } from '../../../shared/services/params';
+import { cleanName } from '../../../shared/utils';
 import {
   AggregateResults,
   FilterResultTypes,

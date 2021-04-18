@@ -1,7 +1,7 @@
 import { Injectable, Logger, LogLevel } from '@nestjs/common';
 
-import { CronService } from '../../cron/service/cron.service';
-import { ParamsService } from '../../params/service/params.service';
+import { CronService } from '../../cron';
+import { ParamsService } from '../../params';
 import { HUB_NODE, LOG_LEVEL_MAP, LOG_LEVEL_PARAM } from '../const';
 import { ActiveLogLevel } from '../type';
 

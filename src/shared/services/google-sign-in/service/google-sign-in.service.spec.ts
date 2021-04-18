@@ -1,4 +1,7 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { DefinitionsService } from '../../definitions';
 import { GoogleSignInService } from './google-sign-in.service';
 
 describe('GoogleSignInService', () => {
@@ -6,7 +9,17 @@ describe('GoogleSignInService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [GoogleSignInService],
+      providers: [
+        GoogleSignInService,
+        {
+          provide: ConfigService,
+          useValue: {},
+        },
+        {
+          provide: DefinitionsService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     service = module.get<GoogleSignInService>(GoogleSignInService);

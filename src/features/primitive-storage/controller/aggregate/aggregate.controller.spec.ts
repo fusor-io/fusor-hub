@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { StorageService } from '../../service/storage.service';
 import { AggregateController } from './aggregate.controller';
 
 describe('Aggregate Controller', () => {
@@ -7,6 +9,10 @@ describe('Aggregate Controller', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AggregateController],
+      providers: [{
+        provide: StorageService,
+        useValue: {}
+      }]
     }).compile();
 
     controller = module.get<AggregateController>(AggregateController);

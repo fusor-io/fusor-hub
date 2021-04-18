@@ -2,10 +2,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Auth, google } from 'googleapis';
-import { DefinitionsService } from 'src/shared/services/definitions/service/definitions.service';
-import { DefinitionKey, DefinitionType } from 'src/shared/services/definitions/type';
-import { Config } from 'src/shared/type';
 
+import { Config } from '../../../type';
+import { DefinitionKey, DefinitionsService, DefinitionType } from '../../definitions';
 import { GOOGLE_API_SCOPES } from '../const';
 import { GoogleApiAccessType } from '../type';
 

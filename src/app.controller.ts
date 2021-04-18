@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 
 import { AppService } from './app.service';
-import { ExportBrokerService } from './shared/services/exporter/services/broker/broker.service';
+import { ExportBrokerService } from './shared/services/exporter';
 
 @Controller()
 export class AppController {

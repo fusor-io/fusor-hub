@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DefinitionsService } from 'src/shared/services/definitions/service/definitions.service';
-import { DefinitionQueryResult } from 'src/shared/services/definitions/type';
-import { ParamsService } from 'src/shared/services/params/service/params.service';
-import { NodeParam } from 'src/shared/services/params/type';
 
+import { DefinitionQueryResult, DefinitionsService } from '../../../definitions';
+import { NodeParam, ParamsService } from '../../../params';
 import { EXPORTER_DEFINITION_TYPE } from '../../const';
 import {
   CollectorResults,

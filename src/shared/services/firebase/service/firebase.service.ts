@@ -1,10 +1,11 @@
-import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as fireBase from 'firebase-admin';
 import * as fs from 'fs';
-import { Config } from 'src/shared/type';
-import { cleanFbNodeName } from 'src/shared/utils';
-import { ExportType } from 'src/shared/services/params/type';
+
+import { Config } from '../../../type';
+import { cleanFbNodeName } from '../../../utils';
+import { ExportType } from '../../params';
 
 // @see https://firebase.google.com/docs/admin/setup
 // @see https://firebase.google.com/docs/reference/js/firebase.database.Reference

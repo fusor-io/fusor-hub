@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import * as slug from 'slug';
+import slug from 'slug';
 import { inspect } from 'util';
 
 import { CronService } from '../../../cron';

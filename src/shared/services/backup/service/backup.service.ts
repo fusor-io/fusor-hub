@@ -2,8 +2,9 @@ import { Bucket, Storage } from '@google-cloud/storage';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crc32 from 'crc-32';
-import { Config } from 'src/shared/type';
 import { inspect } from 'util';
+
+import { Config } from '../../../type';
 
 /**
  * Backup service stores database data in a Google Storage

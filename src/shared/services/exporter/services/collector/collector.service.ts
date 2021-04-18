@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as moment from 'moment';
-import { AggregatesService } from 'src/shared/services/aggregates/service/aggregates.service';
-import { AggregateViewValue } from 'src/shared/services/aggregates/type';
-import { ParamsService } from 'src/shared/services/params/service/params.service';
+import moment from 'moment';
 
+import { AggregatesService, AggregateViewValue } from '../../../aggregates';
+import { ParamsService } from '../../../params';
 import { CollectorResults, ExporterSource, ExporterType } from '../../type';
 
 @Injectable()

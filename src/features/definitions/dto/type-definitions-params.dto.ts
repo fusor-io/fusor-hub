@@ -1,5 +1,6 @@
 import { IsString, Length } from 'class-validator';
-import { LIMIT_MAX_DEFINITION_TYPE_LENGTH } from 'src/shared/const';
+
+import { LIMIT_MAX_DEFINITION_TYPE_LENGTH } from '../../../shared/const';
 
 export class TypeDefinitionsParamsDto {
   @IsString()

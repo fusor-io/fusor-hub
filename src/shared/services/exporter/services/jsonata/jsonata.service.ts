@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as jsonata from 'jsonata';
+import jsonata from 'jsonata';
 
 import { ExporterContext, ExporterRef } from '../../type';
 

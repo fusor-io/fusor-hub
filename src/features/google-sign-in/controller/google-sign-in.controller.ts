@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { google } from 'googleapis';
-import { GoogleSignInService } from 'src/shared/services/google-sign-in/service/google-sign-in.service';
 
+import { GoogleSignInService } from '../../../shared/services/google-sign-in';
 import { GoogleSignInResponse } from '../type';
 
 /**

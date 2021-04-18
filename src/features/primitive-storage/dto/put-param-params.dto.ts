@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import { IsNumber, Length } from 'class-validator';
-import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_PARAM_ID_LENGTH } from 'src/shared/const';
+
+import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_PARAM_ID_LENGTH } from '../../../shared/const';
 
 export class PutParamParamsDto {
   @Length(1, LIMIT_MAX_NODE_ID_LENGTH)
