@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AggregatesService } from '../../../shared/services/aggregates';
-import { ParamsService } from './../../../shared/services/params';
+import { ParamsService } from '../../../shared/services/params';
 import { StorageService } from './storage.service';
 
 describe('StorageService', () => {
