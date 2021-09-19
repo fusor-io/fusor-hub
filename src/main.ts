@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import * as bodyParser from 'body-parser';
-import * as hidePoweredBy from 'hide-powered-by';
+import bodyParser from 'body-parser';
+import hidePoweredBy from 'hide-powered-by';
 
 import { AppModule } from './app.module';
 
