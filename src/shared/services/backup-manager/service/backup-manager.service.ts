@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BackupService } from '../../backup/service/backup.service';
-import { CronService } from '../../cron/service/cron.service';
-import { DefinitionsService } from '../../definitions/service/definitions.service';
+import { BackupService } from '../../backup';
+import { CronService } from '../../cron';
+import { DefinitionsService } from '../../definitions';
 import { DEFINITIONS_FILE } from '../const/backup-data-ids.const';
 
 @Injectable()

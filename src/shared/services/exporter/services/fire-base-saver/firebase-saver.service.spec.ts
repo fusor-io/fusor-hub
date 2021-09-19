@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { FirebaseService } from '../../../firebase';
 import { FirebaseSaverService } from './firebase-saver.service';
 
 describe('FirebaseSaverService', () => {
@@ -6,7 +8,13 @@ describe('FirebaseSaverService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [FirebaseSaverService],
+      providers: [
+        FirebaseSaverService,
+        {
+          provide: FirebaseService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     service = module.get<FirebaseSaverService>(FirebaseSaverService);

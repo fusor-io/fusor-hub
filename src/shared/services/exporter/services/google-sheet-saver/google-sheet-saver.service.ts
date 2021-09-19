@@ -1,19 +1,19 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
-import * as NodeCache from 'node-cache';
-import { GoogleSignInService } from 'src/shared/services/google-sign-in/service/google-sign-in.service';
+import NodeCache from 'node-cache';
 
+import { GoogleSignInService } from '../../../google-sign-in';
 import {
   CollectorAggregate,
   ExporterConfigGoogleSheet,
   ExporterConfigGoogleSheetCellAddress,
   ExporterConfigGoogleSheetCellLookup,
+  ExporterConfigGoogleSheetRangeAddress,
   ExporterConfigGoogleSheetType,
   ExporterContext,
   ExporterRef,
 } from '../../type';
-import { ExporterConfigGoogleSheetRangeAddress } from './../../type/exporter-config-google-sheet.type';
-import { JsonataService } from './../jsonata/jsonata.service';
+import { JsonataService } from '../jsonata/jsonata.service';
 
 /**
  * @see https://codelabs.developers.google.com/codelabs/sheets-api/#4

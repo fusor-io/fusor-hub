@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AggregatesServiceModule } from 'src/shared/services/aggregates/aggregates-service.module';
-import { CronModule } from 'src/shared/services/cron/cron.module';
-import { DefinitionsServiceModule } from 'src/shared/services/definitions/definitions-service.module';
-import { FirebaseModule } from 'src/shared/services/firebase/firebase.module';
-import { GoogleSignInServiceModule } from 'src/shared/services/google-sign-in/google-sign-in.module';
-import { ParamsServiceModule } from 'src/shared/services/params/params-service.module';
 
+import { AggregatesServiceModule } from '../aggregates';
+import { CronModule } from '../cron';
+import { DefinitionsServiceModule } from '../definitions';
+import { FirebaseModule } from '../firebase';
+import { GoogleSignInServiceModule } from '../google-sign-in';
+import { ParamsServiceModule } from '../params';
 import { ExportBrokerService } from './services/broker/broker.service';
 import { CollectorService } from './services/collector/collector.service';
 import { ExporterService } from './services/exporter/exporter.service';

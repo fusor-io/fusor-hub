@@ -1,10 +1,9 @@
-import { createPool, createConnection, Pool, PoolConnection, QueryOptions } from 'mysql';
-
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createConnection, createPool, Pool, PoolConnection, QueryOptions } from 'mysql';
 
-import { Config } from 'src/shared/type';
-import { DEFAULT_MYSQL } from 'src/shared/const';
+import { DEFAULT_MYSQL } from '../../../const';
+import { Config } from '../../../type';
 
 @Injectable()
 export class DatabaseService {
@@ -75,7 +74,7 @@ export class DatabaseService {
       });
 
       await new Promise((resolve, reject) =>
-        connection.connect(error => (error ? reject(error) : resolve())),
+        connection.connect(error => (error ? reject(error) : resolve(true))),
       );
 
       await new Promise((resolve, reject) =>
@@ -84,12 +83,12 @@ export class DatabaseService {
             sql: 'CREATE DATABASE IF NOT EXISTS ??;',
             values: ['iot'],
           },
-          error => (error ? reject(error) : resolve()),
+          error => (error ? reject(error) : resolve(true)),
         ),
       );
 
       await new Promise((resolve, reject) =>
-        connection.end(error => (error ? reject(error) : resolve())),
+        connection.end(error => (error ? reject(error) : resolve(true))),
       );
 
       this._logger.log('Database checked');

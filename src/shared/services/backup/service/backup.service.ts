@@ -2,8 +2,9 @@ import { Bucket, Storage } from '@google-cloud/storage';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crc32 from 'crc-32';
-import { Config } from 'src/shared/type';
 import { inspect } from 'util';
+
+import { Config } from '../../../type';
 
 /**
  * Backup service stores database data in a Google Storage
@@ -68,7 +69,7 @@ export class BackupService {
           const publicUrl = `https://storage.googleapis.com/${this._bucket.name}/${blob.name}`;
           this._logger.log(`File "${publicUrl}" created`);
           this._logger.log(`${buffer.byteLength} bytes written`);
-          resolve();
+          resolve(true);
         });
 
         blobStream.end(buffer);

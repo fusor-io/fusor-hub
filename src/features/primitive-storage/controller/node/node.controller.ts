@@ -23,7 +23,7 @@ export class NodeController {
   async getParam(
     @Param() params: GetParamParamsDto,
     @Headers('Cache-Control') cacheControl: CacheControl,
-  ) {
+  ): Promise<string> {
     const { nodeId, paramId } = params;
     const value = await this._storageService.getParam(
       nodeId,

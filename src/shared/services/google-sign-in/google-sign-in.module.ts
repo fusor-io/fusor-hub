@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DefinitionsServiceModule } from 'src/shared/services/definitions/definitions-service.module';
 
+import { DefinitionsServiceModule } from '../definitions';
 import { GoogleSignInService } from './service/google-sign-in.service';
 
 @Module({

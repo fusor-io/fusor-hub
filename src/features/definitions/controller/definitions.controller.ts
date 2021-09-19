@@ -2,10 +2,9 @@ import { Body, Controller, Get, Headers, Param, Put, Res } from '@nestjs/common'
 import { Response } from 'express';
 import * as HttpStatus from 'http-status-codes';
 import * as MessagePack from 'msgpack-lite';
-import { DefinitionQueryResult } from 'src/shared/services/definitions/type';
-import { dateFromHttpFormat, dateToHttpFormat } from 'src/shared/utils';
 
-import { DefinitionsService } from '../../../shared/services/definitions/service/definitions.service';
+import { DefinitionQueryResult, DefinitionsService } from '../../../shared/services/definitions';
+import { dateFromHttpFormat, dateToHttpFormat } from '../../../shared/utils';
 import { SingleDefinitionParamsDto, TypeDefinitionsParamsDto } from '../dto';
 
 @Controller('definitions')

@@ -3,14 +3,15 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DefinitionsModule } from './features/definitions/definitions.module';
-import { GoogleSignInModule } from './features/google-sign-in/google-sign-in.module';
-import { NodeController } from './features/primitive-storage/controller/node/node.controller';
-import { PrimitiveStorageModule } from './features/primitive-storage/primitive-storage.module';
-import { MsgPackMiddleware } from './shared/middleware/msg-pack-middleware/msg-pack-middleware';
-import { BackupManagerServiceModule } from './shared/services/backup-manager/backup-manager-service.module';
-import { ExporterModule } from './shared/services/exporter/exporter.module';
-import { LogLevelManagerModule } from './shared/services/log-level-manager/log-level-manager.module';
+import { DefinitionsModule } from './features/definitions';
+import { GoogleSignInModule } from './features/google-sign-in';
+import { NodeController, PrimitiveStorageModule } from './features/primitive-storage';
+import { SmsModule } from './features/sms';
+import { MsgPackMiddleware } from './shared/middleware';
+import { ActionFlowModule } from './shared/services/action-flow';
+import { BackupManagerServiceModule } from './shared/services/backup-manager';
+import { ExporterModule } from './shared/services/exporter';
+import { LogLevelManagerModule } from './shared/services/log-level-manager';
 
 @Module({
   imports: [
@@ -21,6 +22,8 @@ import { LogLevelManagerModule } from './shared/services/log-level-manager/log-l
     ExporterModule,
     BackupManagerServiceModule,
     LogLevelManagerModule,
+    ActionFlowModule,
+    SmsModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CronService } from 'src/shared/services/cron/service/cron.service';
-import { ParamsService } from 'src/shared/services/params/service/params.service';
-import { ParamEntry } from 'src/shared/services/params/type';
 
+import { CronService } from '../../../cron';
+import { ParamEntry, ParamsService } from '../../../params';
 import { ExporterService } from '../exporter/exporter.service';
 
 @Injectable()

@@ -1,0 +1,187 @@
+{
+  "id": "demo@0.2.0",
+  "nodes": {
+    "1": {
+      "id": 1,
+      "data": {
+        "num": 2
+      },
+      "inputs": {},
+      "outputs": {
+        "num": {
+          "connections": [
+            {
+              "node": 3,
+              "input": "num1",
+              "data": {}
+            },
+            {
+              "node": 5,
+              "input": "num2",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [80, 200],
+      "name": "Number"
+    },
+    "2": {
+      "id": 2,
+      "data": {
+        "num": 0
+      },
+      "inputs": {},
+      "outputs": {
+        "num": {
+          "connections": [
+            {
+              "node": 3,
+              "input": "num2",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [80, 400],
+      "name": "Number"
+    },
+    "3": {
+      "id": 3,
+      "data": {
+        "preview": 2,
+        "num1": 0,
+        "num2": 0
+      },
+      "inputs": {
+        "num1": {
+          "connections": [
+            {
+              "node": 1,
+              "output": "num",
+              "data": {}
+            }
+          ]
+        },
+        "num2": {
+          "connections": [
+            {
+              "node": 2,
+              "output": "num",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "outputs": {
+        "num": {
+          "connections": [
+            {
+              "node": 6,
+              "input": "num2",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [500, 240],
+      "name": "Add"
+    },
+    "4": {
+      "id": 4,
+      "data": {
+        "num": 3
+      },
+      "inputs": {},
+      "outputs": {
+        "num": {
+          "connections": [
+            {
+              "node": 5,
+              "input": "num1",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [50.39281608426893, -94.8096741254462],
+      "name": "Number"
+    },
+    "5": {
+      "id": 5,
+      "data": {
+        "preview": 5,
+        "num1": 0,
+        "num2": 0
+      },
+      "inputs": {
+        "num1": {
+          "connections": [
+            {
+              "node": 4,
+              "output": "num",
+              "data": {}
+            }
+          ]
+        },
+        "num2": {
+          "connections": [
+            {
+              "node": 1,
+              "output": "num",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "outputs": {
+        "num": {
+          "connections": [
+            {
+              "node": 6,
+              "input": "num1",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "position": [430.1236040793791, -43.04112081885964],
+      "name": "Add"
+    },
+    "6": {
+      "id": 6,
+      "data": {
+        "preview": 7,
+        "num1": 0,
+        "num2": 0
+      },
+      "inputs": {
+        "num1": {
+          "connections": [
+            {
+              "node": 5,
+              "output": "num",
+              "data": {}
+            }
+          ]
+        },
+        "num2": {
+          "connections": [
+            {
+              "node": 3,
+              "output": "num",
+              "data": {}
+            }
+          ]
+        }
+      },
+      "outputs": {
+        "num": {
+          "connections": []
+        }
+      },
+      "position": [802.259012680026, 20.185768639531233],
+      "name": "Add"
+    }
+  }
+}

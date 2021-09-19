@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 
 /**
  * @return string in HTTP format, ex. Wed, 21 Oct 2015 07:28:00 GMT

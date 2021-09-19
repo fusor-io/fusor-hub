@@ -1,4 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { CronService } from '../../cron';
+import { ParamsService } from '../../params';
 import { LogLevelManagerService } from './log-level-manager.service';
 
 describe('LogLevelManagerService', () => {
@@ -6,7 +9,17 @@ describe('LogLevelManagerService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [LogLevelManagerService],
+      providers: [
+        LogLevelManagerService,
+        {
+          provide: ParamsService,
+          useValue: {},
+        },
+        {
+          provide: CronService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     service = module.get<LogLevelManagerService>(LogLevelManagerService);

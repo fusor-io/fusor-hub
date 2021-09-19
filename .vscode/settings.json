@@ -1,11 +1,14 @@
 {
-    "explorer.compactFolders": false,
-    "cSpell.words": [
-        "Configurator",
-        "IFTTT",
-        "fusor",
-        "iogateway",
-        "jsonata"
-    ],
-    "debug.javascript.autoAttachFilter": "onlyWithFlag"
+  "explorer.compactFolders": false,
+  "cSpell.words": [
+    "Configurator",
+    "IFTTT",
+    "MESSENTE",
+    "fusor",
+    "iogateway",
+    "jsonata",
+    "nestjs",
+    "omni"
+  ],
+  "debug.javascript.autoAttachFilter": "onlyWithFlag"
 }

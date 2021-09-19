@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { FirebaseService } from 'src/shared/services/firebase/service/firebase.service';
 
+import { FirebaseService } from '../../../firebase';
 import { CollectorAggregate, ExporterConfigFirebase, ExporterContext } from '../../type';
 
 @Injectable()

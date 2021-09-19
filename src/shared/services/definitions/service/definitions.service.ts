@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 
-import { DatabaseService } from '../../database/service/database.service';
+import { DatabaseService } from '../../database';
 import { DefinitionQueryResultDto } from '../dto';
 import { CompleteDefinitionQueryResultDto } from '../dto/definition-query-result.dto';
 import { DEFINITIONS_TABLE, DEFINITIONS_TABLE_NAME } from '../sql';

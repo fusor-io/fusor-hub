@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DatabaseService } from 'src/shared/services/database/service/database.service';
-import { ExportType, NodeParam, ParamEntry, WriteCache } from 'src/shared/services/params/type';
-import { cleanName } from 'src/shared/utils';
+import { BehaviorSubject } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { inspect } from 'util';
 
+import { cleanName } from '../../../utils';
+import { DatabaseService } from '../../database/service/database.service';
+import { ExportType, NodeParam, ParamEntry, ParamUpdateEvent, WriteCache } from '../../params/type';
 import { WRITE_DELAY } from '../const';
 import { LOG_TABLE_DOUBLE, LOG_TABLE_INT, PARAM_TABLE, PARAM_TABLE_NAME, VALUE_TABLE_PREFIX } from '../sql';
 import { LoggingType, NodeLogging, NodeParamValue, ParamWriteHookFn } from '../type';
@@ -10,13 +13,15 @@ import { LoggingType, NodeLogging, NodeParamValue, ParamWriteHookFn } from '../t
 @Injectable()
 export class ParamsService {
   private readonly _logger = new Logger(this.constructor.name);
+  private _paramUpdates$ = new BehaviorSubject<ParamUpdateEvent | undefined>(undefined);
+
+  public paramUpdates$ = this._paramUpdates$.pipe(filter(data => data !== undefined));
 
   constructor(private readonly _databaseService: DatabaseService) {}
 
   private readonly _writeCache: WriteCache = {};
   private readonly _writeHooks: ParamWriteHookFn[] = [];
 
-  // TODO refactor using CQRS
   registerWriteHook(hook: ParamWriteHookFn): void {
     this._writeHooks.push(hook);
   }
@@ -73,6 +78,20 @@ export class ParamsService {
     }
 
     this._callWriteHooks(nodeId, paramId, value);
+  }
+
+  async emitCurrentValues(): Promise<void> {
+    this._logger.log('Emitting all params');
+
+    try {
+      const allParams = await this.filterParams();
+      for (const { node: nodeId, param: paramId, value } of allParams) {
+        this._paramUpdates$.next({ nodeId, paramId, value });
+      }
+      this._logger.log(`${allParams.length} params emitted`);
+    } catch (error) {
+      this._logger.error(`Emitting failed: ${inspect(error)}`);
+    }
   }
 
   private async _writeParamValue(nodeId: string, paramId: string, value: number): Promise<void> {
@@ -191,6 +210,8 @@ export class ParamsService {
   }
 
   private async _callWriteHooks(nodeId: string, paramId: string, value: number): Promise<void> {
+    this._paramUpdates$.next({ nodeId, paramId, value });
+
     for (const hook of this._writeHooks) {
       try {
         await hook(nodeId, paramId, value);

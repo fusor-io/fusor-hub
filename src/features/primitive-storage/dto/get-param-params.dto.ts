@@ -1,5 +1,6 @@
-import { Length, IsString } from 'class-validator';
-import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_PARAM_ID_LENGTH } from 'src/shared/const';
+import { IsString, Length } from 'class-validator';
+
+import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_PARAM_ID_LENGTH } from '../../../shared/const';
 
 export class GetParamParamsDto {
   @IsString()
