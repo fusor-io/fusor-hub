@@ -17,7 +17,7 @@ export class SmsSenderOperator extends ObserverBase {
 
   constructor(moduleRef: ModuleRef) {
     super(moduleRef, [INPUT_IN]);
-    this._messagingService = moduleRef.get(MessagingService);
+    this._messagingService = moduleRef.get(MessagingService, { strict: false });
   }
 
   init(config: SmsSenderConfig) {

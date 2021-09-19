@@ -3,11 +3,11 @@ import { Module } from '@nestjs/common';
 import { CronModule } from '../cron';
 import { DefinitionsServiceModule } from '../definitions';
 import { MessagingModule } from '../messaging';
-import { ParamsServiceModule } from '../params/params-service.module';
+import { ParamsServiceModule } from '../params';
 import { ReteImporterService } from './services/rete-importer/rete-importer.service';
 
 @Module({
-  imports: [ParamsServiceModule, DefinitionsServiceModule, CronModule, MessagingModule],
+  imports: [ParamsServiceModule, MessagingModule, DefinitionsServiceModule, CronModule],
   providers: [ReteImporterService],
 })
 export class ActionFlowModule {
