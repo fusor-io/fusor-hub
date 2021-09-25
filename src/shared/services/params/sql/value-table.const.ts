@@ -1,4 +1,4 @@
-import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_SENSOR_ID_LENGTH } from '../../../const';
+import { LIMIT_MAX_NODE_ID_LENGTH, LIMIT_MAX_PARAM_COMMENT_LENGTH, LIMIT_MAX_SENSOR_ID_LENGTH } from '../../../const';
 
 export const LOG_TABLE_DOUBLE = `
 CREATE TABLE IF NOT EXISTS \`#\` (
@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS \`#\` (
     logging ENUM('no','double','int') NOT NULL DEFAULT 'no',
     export ENUM('no','value','15min','30min','1hour','2hours','1day','2days','1week','10days','1month','3months','1year') NOT NULL DEFAULT 'no',
     ts TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    comments CHAR(${LIMIT_MAX_PARAM_COMMENT_LENGTH}),
     PRIMARY KEY (node, param)
 );`;
 
