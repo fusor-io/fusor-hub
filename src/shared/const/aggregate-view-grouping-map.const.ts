@@ -6,6 +6,7 @@ export const AGGREGATE_VIEW_GROUPING_MAP = {
   '15min': 15 * 60,
   '30min': 30 * 60,
   '1h': 60 * 60,
+  '2h': 2 * 60 * 60,
   '3h': 3 * 60 * 60,
   '6h': 6 * 60 * 60,
   '12h': 12 * 60 * 60,
