@@ -1,15 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { escape } from 'mysql';
 
-import { AGGREGATE_VIEW_GROUPING_MAP } from '../../../const';
+import { AGGREGATE_VIEW_GROUPING_MAP, MAX_AGGREGATE_VALUE_COUNT } from '../../../const';
 import { DatabaseService } from '../../database';
 import { ParamsService } from '../../params';
 import { AGGREGATE_VALUE_MAP, MINUTE_PRECISION_GROUPINGS, MONTH_PRECISION_GROUPINGS } from '../const';
 import { AggregateView, AggregateViewGrouping, AggregateViewValue } from '../type';
 
-
 @Injectable()
 export class AggregatesService {
+  private readonly _logger = new Logger(this.constructor.name);
+
   constructor(
     private readonly _databaseService: DatabaseService,
     private readonly _paramsService: ParamsService,
@@ -22,6 +23,7 @@ export class AggregatesService {
     end: number,
     groupBy: AggregateViewGrouping,
     aggregates: AggregateViewValue[],
+    limit = 100,
   ): Promise<AggregateView[]> {
     const loggingType = await this._paramsService.getLoggingType(nodeId, paramId);
     const tableName = this._paramsService.generateTableName(nodeId, paramId, loggingType);
@@ -54,10 +56,20 @@ export class AggregatesService {
       frameQuery = 'YEAR(ts)';
     }
 
+    if (limit > MAX_AGGREGATE_VALUE_COUNT) {
+      this._logger.warn(
+        `Query limit ${limit} is too large, reducing to ${MAX_AGGREGATE_VALUE_COUNT}`,
+      );
+      limit = MAX_AGGREGATE_VALUE_COUNT;
+    } else if (limit < 1) {
+      this._logger.warn(`Query limit ${limit} is < 1, changing to 1`);
+      limit = 1;
+    }
+
     return this._databaseService.query<AggregateView>({
       sql: `SELECT ${frameQuery} AS frame, ${aggregatesQuery} FROM \`${tableName}\`
            WHERE UNIX_TIMESTAMP(ts) >= ? ${endQuery}
-           GROUP BY frame LIMIT 100`,
+           GROUP BY frame LIMIT ${limit}`,
       values: [start],
     });
   }

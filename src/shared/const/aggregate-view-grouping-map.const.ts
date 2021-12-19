@@ -1,5 +1,8 @@
 export const AGGREGATE_VIEW_GROUPING_MAP = {
   '1min': 60,
+  '2min': 2 * 60,
+  '5min': 5 * 60,
+  '10min': 10 * 60,
   '15min': 15 * 60,
   '30min': 30 * 60,
   '1h': 60 * 60,
@@ -15,3 +18,5 @@ export const AGGREGATE_VIEW_GROUPING_MAP = {
 
   '1yr': 1,
 };
+
+export const MAX_AGGREGATE_VALUE_COUNT = 1000;

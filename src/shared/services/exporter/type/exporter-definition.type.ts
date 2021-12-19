@@ -36,6 +36,7 @@ export interface ExporterAggregateConfig {
   grouping: AggregateViewGrouping;
   operation?: AggregateViewValue;
   startOffset: TimeOffset;
+  limit?: number;
 }
 
 export interface ExporterCollection {
