@@ -2,6 +2,9 @@ import { AggregateViewGrouping } from '../type';
 
 export const MINUTE_PRECISION_GROUPINGS = [
   AggregateViewGrouping.by1Minute,
+  AggregateViewGrouping.by2Minutes,
+  AggregateViewGrouping.by5Minutes,
+  AggregateViewGrouping.by10Minutes,
   AggregateViewGrouping.by15Minutes,
   AggregateViewGrouping.by30Minutes,
   AggregateViewGrouping.by1Hour,

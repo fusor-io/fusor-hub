@@ -4,6 +4,7 @@ import moment from 'moment';
 import { AggregatesService, AggregateViewValue } from '../../../aggregates';
 import { ParamsService } from '../../../params';
 import { CollectorResults, ExporterSource, ExporterType } from '../../type';
+import { MAX_AGGREGATE_VALUE_COUNT } from './../../../../const/aggregate-view-grouping-map.const';
 
 @Injectable()
 export class CollectorService {
@@ -25,8 +26,12 @@ export class CollectorService {
       }
 
       case ExporterType.aggregate: {
-        const { grouping, operation = AggregateViewValue.average, startOffset } =
-          source.config || {};
+        const {
+          grouping,
+          operation = AggregateViewValue.average,
+          startOffset,
+          limit = MAX_AGGREGATE_VALUE_COUNT,
+        } = source.config || {};
         if (!grouping) throw new Error('Undefined Grouping');
 
         const timeOffset =
@@ -41,6 +46,7 @@ export class CollectorService {
           Date.now(),
           grouping,
           [operation],
+          limit,
         );
         return result.map(item => ({ ts: item.frame, value: item[operation] }));
       }
