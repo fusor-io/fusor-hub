@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsEnum, IsNumber, IsOptional, IsPositive, Max, Min } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsOptional, IsPositive, Max, Min, ValidateIf } from 'class-validator';
 
 import { MAX_AGGREGATE_VALUE_COUNT } from '../../../shared/const';
 import { AggregateViewGrouping, AggregateViewValue } from '../../../shared/services/aggregates';
@@ -29,10 +29,11 @@ export class GetAggregateViewQueryDto {
   aggregates: AggregateViewValue[];
 
   @IsOptional()
+  @ValidateIf(value => value !== undefined)
   @IsNumber()
   @Min(1)
   @Max(MAX_AGGREGATE_VALUE_COUNT)
   @Type(() => String)
   @Transform((value: string) => parseInt(value))
-  limit?: number
+  limit?: number;
 }
