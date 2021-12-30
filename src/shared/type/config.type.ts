@@ -15,6 +15,8 @@ export enum Config {
   googleApiClientId = 'GOOGLE_API_CLIENT_ID',
   googleApiSecret = 'GOOGLE_API_SECRET',
   googleCloudProjectId = 'GOOGLE_CLOUD_PROJECT_ID',
+  googleCloudProjectNumber = 'GOOGLE_CLOUD_PROJECT_NUMBER',
+  googleCloudApiKey = 'GOOGLE_CLOUD_PROJECT_API_KEY',
   googleCloudStorageBucket = 'GOOGLE_CLOUD_STORAGE_BUCKET',
   googleCloudStorageBackupFolder = 'GOOGLE_CLOUD_STORAGE_BACKUP_FOLDER',
 
