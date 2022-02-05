@@ -23,7 +23,11 @@ export class StorageService {
 
   public async getParam(nodeId: string, paramId: string, useCache = true): Promise<number> {
     try {
-      return await this._paramsService.readParamValue(cleanName(nodeId), cleanName(paramId), useCache);
+      return await this._paramsService.readParamValue(
+        cleanName(nodeId),
+        cleanName(paramId),
+        useCache,
+      );
     } catch (error) {
       this._logger.error(`Failed reading param ${nodeId}:${paramId}`, error?.message);
       return undefined;
@@ -58,7 +62,8 @@ export class StorageService {
 
     await Promise.all(
       query.map(async item => {
-        const [nodeId, paramId] = item.split('.');
+        const separator = item.includes(':') ? ':' : '.'; // '.' for backward compatibility
+        const [nodeId, paramId] = item.split(separator);
         if (paramId && nodeId) {
           const value = await this.getParam(cleanName(nodeId), cleanName(paramId));
           if (value === undefined) return;
