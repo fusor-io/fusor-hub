@@ -30,6 +30,6 @@ export class NodeController {
       paramId,
       cacheControl !== CacheControl.noCache,
     );
-    return value === undefined ? '' : value.toString();
+    return value === undefined || value === null ? '' : value.toString();
   }
 }
