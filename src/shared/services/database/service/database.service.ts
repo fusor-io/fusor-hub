@@ -40,11 +40,14 @@ export class DatabaseService {
 
   async query<T>(query: QueryOptions): Promise<T[]> {
     const connection = await this.getConnection();
-    const queryResult: T[] = await new Promise((resolve, reject) =>
-      connection.query(query, (error, result) => (error ? reject(error) : resolve(result))),
-    );
-    connection.release();
-    return queryResult;
+    try {
+      const queryResult: T[] = await new Promise((resolve, reject) =>
+        connection.query(query, (error, result) => (error ? reject(error) : resolve(result))),
+      );
+      return queryResult;
+    } finally {
+      connection.release();
+    }
   }
 
   async createTableIfNotExists(query: string, tableName: string): Promise<void> {
