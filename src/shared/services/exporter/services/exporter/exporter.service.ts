@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { sleep } from '../../../../../shared/utils/sleep';
 import { DefinitionQueryResult, DefinitionsService } from '../../../definitions';
 import { NodeParam, ParamsService } from '../../../params';
 import { EXPORTER_DEFINITION_TYPE } from '../../const';
@@ -171,6 +172,8 @@ export class ExporterService {
         this._logger.log(`Skipping export: ${error?.sqlMessage}`);
       } else {
         this._logger.warn(`Failed collecting results ${JSON.stringify({ exporter, error })}`);
+        // could be that we have run out of db connections, sleep for a while
+        await sleep(3000);
       }
       return;
     }
@@ -201,6 +204,8 @@ export class ExporterService {
       }
     } catch (error) {
       this._logger.error(`Failed param export ${JSON.stringify(exporter)}`, error);
+      // could be that we hit request limit, sleep for a while
+      await sleep(5000);
     }
   }
 
