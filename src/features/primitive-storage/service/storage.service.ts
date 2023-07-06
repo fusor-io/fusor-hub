@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AggregatesService, AggregateView } from '../../../shared/services/aggregates';
 import { LoggingType, ParamsService } from '../../../shared/services/params';
 import { cleanName } from '../../../shared/utils';
+import { sleep } from '../../../shared/utils/sleep';
 import {
   AggregateResults,
   FilterResultTypes,
@@ -51,6 +52,8 @@ export class StorageService {
     if (payload && Object.keys(payload).length) {
       for (const paramId of Object.keys(payload)) {
         await this.saveParam(nodeId, paramId, payload[paramId]);
+        // add small delay to reduce load on db
+        await sleep(42);
       }
     }
 
