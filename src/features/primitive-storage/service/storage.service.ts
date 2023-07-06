@@ -49,9 +49,9 @@ export class StorageService {
     this._logger.log(`Saving batch ${nodeId}`);
 
     if (payload && Object.keys(payload).length) {
-      await Promise.all(
-        Object.keys(payload).map(paramId => this.saveParam(nodeId, paramId, payload[paramId])),
-      );
+      for (const paramId of Object.keys(payload)) {
+        await this.saveParam(nodeId, paramId, payload[paramId]);
+      }
     }
 
     this._logger.log(`Batch ${nodeId} saved`);
