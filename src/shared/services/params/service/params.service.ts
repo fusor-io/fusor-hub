@@ -3,11 +3,18 @@ import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { inspect } from 'util';
 
+import { sleep } from '../../../../shared/utils/sleep';
 import { cleanName } from '../../../utils';
 import { DatabaseService } from '../../database/service/database.service';
 import { ExportType, NodeParam, ParamEntry, ParamUpdateEvent, WriteCache } from '../../params/type';
 import { WRITE_DELAY } from '../const';
-import { LOG_TABLE_DOUBLE, LOG_TABLE_INT, PARAM_TABLE, PARAM_TABLE_NAME, VALUE_TABLE_PREFIX } from '../sql';
+import {
+  LOG_TABLE_DOUBLE,
+  LOG_TABLE_INT,
+  PARAM_TABLE,
+  PARAM_TABLE_NAME,
+  VALUE_TABLE_PREFIX,
+} from '../sql';
 import { LoggingType, NodeLogging, NodeParamValue, ParamWriteHookFn } from '../type';
 
 @Injectable()
@@ -117,6 +124,7 @@ export class ParamsService {
         await this._writeParamValue(item.nodeId, item.paramId, item.value);
         item.isFlushed = true;
         item.lastWriteTime = Date.now();
+        await sleep(20); // reduce load to db
       }
     }
     this._logger.log('...write cache flushed');
