@@ -151,6 +151,8 @@ export class StorageService {
       await this._paramsService.logParamValue(nodeId, paramId, value, loggingType);
     } catch (error) {
       this._logger.error(`Failed storing ${paramId}`, error?.message);
+      // fail could be caused by too heavy load on db (out of connections)
+      await sleep(1000);
     }
   }
 }
