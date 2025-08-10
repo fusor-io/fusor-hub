@@ -1,12 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  createConnection,
-  createPool,
-  Pool,
-  PoolConnection,
-  QueryOptions,
-} from 'mysql2';
+import { createConnection, createPool, Pool, PoolConnection, QueryOptions } from 'mysql2';
 
 import { DEFAULT_MYSQL } from '../../../const';
 import { Config } from '../../../type';
@@ -15,17 +9,17 @@ import { Config } from '../../../type';
 export class DatabaseService {
   private readonly _logger = new Logger(this.constructor.name);
   private readonly _tableCache = {};
-  private _pool: Pool;
+  private _pool: Pool | undefined;
 
   constructor(private readonly _configService: ConfigService) {}
 
-  async init() {
-    if (!this._pool) {
+  async init(force = false) {
+    if (!this._pool || force) {
       await this._createDbIfNotExists();
 
       this._pool = createPool({
         connectionLimit:
-        this._configService.get<number>(Config.mySqlPoolSize) || DEFAULT_MYSQL.poolSize,
+          this._configService.get<number>(Config.mySqlPoolSize) || DEFAULT_MYSQL.poolSize,
         waitForConnections: DEFAULT_MYSQL.waitForConnections,
         queueLimit: DEFAULT_MYSQL.queueLimit,
         trace: DEFAULT_MYSQL.trace,
@@ -49,14 +43,35 @@ export class DatabaseService {
     );
   }
 
-  async query<T>(query: QueryOptions): Promise<T[]> {
+  async query<T>(query: QueryOptions, retries = 1): Promise<T[]> {
     const connection = await this.getConnection();
     try {
       const queryResult: T[] = await new Promise((resolve, reject) =>
         // TODO: solve type issue for INSERT / UPDATE queries
-        connection.query(query, (error, result) => (error ? reject(error) : resolve(result as undefined))),
+        connection.query(query, (error, result) =>
+          error ? reject(error) : resolve(result as undefined),
+        ),
       );
       return queryResult;
+    } catch (err) {
+      const transient =
+        err?.code === 'PROTOCOL_CONNECTION_LOST' ||
+        err?.code === 'ECONNRESET' ||
+        err?.fatal === true;
+
+      if (transient && retries > 0) {
+        this._logger.warn(`DB transient error ${err?.code ?? ''}; recreating pool & retrying...`);
+        try {
+          await this._pool?.end();
+        } catch {
+          this._logger.warn('Failed ending existing pool');
+        }
+        this._pool = undefined;
+        return this.query<T>(query, retries - 1);
+      }
+
+      this._logger.error('DB query failed', err?.message);
+      throw err;
     } finally {
       connection.release();
     }
