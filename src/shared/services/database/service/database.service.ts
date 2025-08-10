@@ -7,62 +7,64 @@ import { inspect } from 'util';
 import { DEFAULT_MYSQL } from '../../../const';
 import { Config } from '../../../type';
 
+let _recreating: Promise<void> | undefined = undefined; // lock
+let _pool: Pool | undefined = undefined;
+
 // Singleton service (Scope.DEFAULT)
 @Injectable({ scope: Scope.DEFAULT })
 export class DatabaseService {
   private readonly _logger = new Logger(this.constructor.name);
   private readonly _tableCache = {};
-  private _pool: Pool | undefined;
-  private _recreating?: Promise<void>; // lock
 
   constructor(private readonly _configService: ConfigService) {}
 
   async init(force = false): Promise<void> {
-    if (!force && this._pool) return;
+    if (!force && _pool) return;
 
     // single-flight: if someone is already recreating, just await
-    if (this._recreating) {
+    if (_recreating) {
       this._logger.warn('Already recreating pool, waiting to complete...');
-      await this._recreating;
+      await _recreating;
       return;
     }
 
-    this._recreating = (async () => {
+    _recreating = (async () => {
       // close old pool if any
-      if (this._pool) {
+      if (_pool) {
         this._logger.warn('Recreating pool...');
         try {
-          await this._pool.end();
+          await this._closePool();
         } catch (error) {
           this._logger.warn(`Failed ending pool: ${inspect(error)}`);
         }
-        this._pool = undefined;
+
+        await sleep(10000); // cool down
+
+        _pool = undefined;
       }
 
-      if (!force && !this._pool) {
+      if (!force && !_pool) {
         await this._createDbIfNotExists().catch(() => {
           this._logger.error('Failed creating db');
         });
       }
 
-      this._pool = this._buildPool();
+      _pool = this._buildPool();
     })();
 
     try {
-      await this._recreating;
+      await _recreating;
     } catch (error) {
       this._logger.error(`Failed creating pool: ${inspect(error)}`);
     } finally {
-      this._recreating = undefined;
+      _recreating = undefined;
     }
   }
 
   async getConnection(): Promise<PoolConnection> {
     await this.init();
     return new Promise((resolve, reject) =>
-      this._pool.getConnection((error, connection) =>
-        error ? reject(error) : resolve(connection),
-      ),
+      _pool.getConnection((error, connection) => (error ? reject(error) : resolve(connection))),
     );
   }
 
@@ -93,7 +95,7 @@ export class DatabaseService {
         } catch {
           this._logger.warn('Failed ending existing pool');
         }
-        this._pool = undefined;
+        _pool = undefined;
         // waiting a bit to allow mysql to solve any internal issues
         await sleep(10000);
 
@@ -154,12 +156,12 @@ export class DatabaseService {
   }
 
   private async _closePool(): Promise<void> {
-    if (!this._pool) {
+    if (!_pool) {
       return;
     }
 
     return new Promise<void>((resolve, reject) => {
-      this._pool.end((err?: Error) => (err ? reject(err) : resolve()));
+      _pool.end((err?: Error) => (err ? reject(err) : resolve()));
     });
   }
 
