@@ -21,6 +21,7 @@ export class DatabaseService {
 
     // single-flight: if someone is already recreating, just await
     if (this._recreating) {
+      this._logger.warn('Already recreating pool, waiting to complete...');
       await this._recreating;
       return;
     }
@@ -37,11 +38,9 @@ export class DatabaseService {
         this._pool = undefined;
       }
 
-      // (optional) ensure DB exists only on cold start
-      // If you need it only once, guard with a boolean
       if (!force && !this._pool) {
         await this._createDbIfNotExists().catch(() => {
-          /* log inside that fn */
+          this._logger.error('Failed creating db');
         });
       }
 
@@ -50,6 +49,8 @@ export class DatabaseService {
 
     try {
       await this._recreating;
+    } catch (error) {
+      this._logger.error(`Failed creating pool: ${inspect(error)}`);
     } finally {
       this._recreating = undefined;
     }
@@ -75,6 +76,7 @@ export class DatabaseService {
       );
       return queryResult;
     } catch (err) {
+      this._logger.error(`Error ${err?.code} running query: ${inspect(err)}`);
       const transient =
         err?.code === 'PROTOCOL_CONNECTION_LOST' ||
         err?.code === 'ECONNRESET' ||
