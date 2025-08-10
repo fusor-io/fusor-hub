@@ -87,11 +87,9 @@ export class DatabaseService {
         err?.fatal === true;
 
       if (transient && retries > 0) {
-        this._logger.warn(`DB transient error ${err?.code ?? ''}; recreating pool & retrying...`);
+        this._logger.warn(`DB transient error ${err?.code ?? ''}`);
         try {
-          this._logger.warn('Recreating pool...');
           await this.init(true);
-          this._logger.warn('...pool recreated');
         } catch {
           this._logger.warn('Failed ending existing pool');
         }
@@ -99,6 +97,8 @@ export class DatabaseService {
         // waiting a bit to allow mysql to solve any internal issues
         await sleep(10000);
 
+        this._logger.warn(`Retrying query ${inspect(query)}`);
+        
         return this.query<T>(query, retries - 1);
       }
 
