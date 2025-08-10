@@ -4,6 +4,7 @@ import { createConnection, createPool, Pool, PoolConnection, QueryOptions } from
 
 import { DEFAULT_MYSQL } from '../../../const';
 import { Config } from '../../../type';
+import { sleep } from 'src/shared/utils/sleep';
 
 @Injectable()
 export class DatabaseService {
@@ -62,7 +63,7 @@ export class DatabaseService {
     );
   }
 
-  async query<T>(query: QueryOptions, retries = 1): Promise<T[]> {
+  async query<T>(query: QueryOptions, retries = 3): Promise<T[]> {
     const connection = await this.getConnection();
     try {
       const queryResult: T[] = await new Promise((resolve, reject) =>
@@ -91,6 +92,9 @@ export class DatabaseService {
           this._logger.warn('Failed ending existing pool');
         }
         this._pool = undefined;
+        // waiting a bit to allow mysql to solve any internal issues
+        await sleep(10000);
+
         return this.query<T>(query, retries - 1);
       }
 
