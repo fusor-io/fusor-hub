@@ -82,7 +82,11 @@ export class DatabaseService {
       if (transient && retries > 0) {
         this._logger.warn(`DB transient error ${err?.code ?? ''}; recreating pool & retrying...`);
         try {
+          this._logger.warn('Closing pool...');
           await this._closePool();
+          this._logger.warn('Recreating pool...');
+          await this.init(true);
+          this._logger.warn('...pool recreated');
         } catch {
           this._logger.warn('Failed ending existing pool');
         }
@@ -129,7 +133,11 @@ export class DatabaseService {
 
     pool.on('connection', (conn: any) => {
       this._logger.log('Enabling keep alive for connection');
-      conn.stream?.setKeepAlive?.(true, 10_000);
+      if (conn.stream?.setKeepAlive) {
+        conn.stream.setKeepAlive(true, 1000);
+      } else {
+        this._logger.warn('Unable to set keep alive time');
+      }
     });
 
     pool.on('error', (e: any) => {
