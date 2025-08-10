@@ -1,13 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createConnection, createPool, Pool, PoolConnection, QueryOptions } from 'mysql2';
 
-import { DEFAULT_MYSQL } from '../../../const';
-import { Config } from '../../../type';
 import { sleep } from 'src/shared/utils/sleep';
 import { inspect } from 'util';
+import { DEFAULT_MYSQL } from '../../../const';
+import { Config } from '../../../type';
 
-@Injectable()
+// Singleton service (Scope.DEFAULT)
+@Injectable({ scope: Scope.DEFAULT })
 export class DatabaseService {
   private readonly _logger = new Logger(this.constructor.name);
   private readonly _tableCache = {};
