@@ -4,10 +4,9 @@ import {
   createConnection,
   createPool,
   Pool,
-  PoolConfig,
   PoolConnection,
   QueryOptions,
-} from 'mysql';
+} from 'mysql2';
 
 import { DEFAULT_MYSQL } from '../../../const';
 import { Config } from '../../../type';
@@ -24,18 +23,13 @@ export class DatabaseService {
     if (!this._pool) {
       await this._createDbIfNotExists();
 
-      // Workaround incomplete TypeORM type definitions
-      const connectionParams: Partial<PoolConfig> = {
-        enableKeepAlive: DEFAULT_MYSQL.keepAlive,
-      } as any;
-
       this._pool = createPool({
-        ...connectionParams,
         connectionLimit:
-          this._configService.get<number>(Config.mySqlPoolSize) || DEFAULT_MYSQL.poolSize,
+        this._configService.get<number>(Config.mySqlPoolSize) || DEFAULT_MYSQL.poolSize,
         waitForConnections: DEFAULT_MYSQL.waitForConnections,
         queueLimit: DEFAULT_MYSQL.queueLimit,
         trace: DEFAULT_MYSQL.trace,
+        enableKeepAlive: true,
 
         host: this._configService.get<string>(Config.mySqlUrl) || DEFAULT_MYSQL.host,
         port: this._configService.get<number>(Config.mySqlPort) || DEFAULT_MYSQL.port,
@@ -59,7 +53,8 @@ export class DatabaseService {
     const connection = await this.getConnection();
     try {
       const queryResult: T[] = await new Promise((resolve, reject) =>
-        connection.query(query, (error, result) => (error ? reject(error) : resolve(result))),
+        // TODO: solve type issue for INSERT / UPDATE queries
+        connection.query(query, (error, result) => (error ? reject(error) : resolve(result as undefined))),
       );
       return queryResult;
     } finally {
