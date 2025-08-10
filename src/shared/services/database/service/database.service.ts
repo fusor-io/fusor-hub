@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createConnection, createPool, Pool, PoolConnection, QueryOptions } from 'mysql';
+import {
+  createConnection,
+  createPool,
+  Pool,
+  PoolConfig,
+  PoolConnection,
+  QueryOptions,
+} from 'mysql';
 
 import { DEFAULT_MYSQL } from '../../../const';
 import { Config } from '../../../type';
@@ -17,9 +24,19 @@ export class DatabaseService {
     if (!this._pool) {
       await this._createDbIfNotExists();
 
+      // Workaround incomplete TypeORM type definitions
+      const connectionParams: Partial<PoolConfig> = {
+        enableKeepAlive: DEFAULT_MYSQL.keepAlive,
+      } as any;
+
       this._pool = createPool({
+        ...connectionParams,
         connectionLimit:
           this._configService.get<number>(Config.mySqlPoolSize) || DEFAULT_MYSQL.poolSize,
+        waitForConnections: DEFAULT_MYSQL.waitForConnections,
+        queueLimit: DEFAULT_MYSQL.queueLimit,
+        trace: DEFAULT_MYSQL.trace,
+
         host: this._configService.get<string>(Config.mySqlUrl) || DEFAULT_MYSQL.host,
         port: this._configService.get<number>(Config.mySqlPort) || DEFAULT_MYSQL.port,
         user: this._configService.get<string>(Config.mySqlUser),
