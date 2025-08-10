@@ -5,6 +5,7 @@ import { createConnection, createPool, Pool, PoolConnection, QueryOptions } from
 import { DEFAULT_MYSQL } from '../../../const';
 import { Config } from '../../../type';
 import { sleep } from 'src/shared/utils/sleep';
+import { inspect } from 'util';
 
 @Injectable()
 export class DatabaseService {
@@ -30,8 +31,8 @@ export class DatabaseService {
         this._logger.warn('Recreating pool...');
         try {
           await this._pool.end();
-        } catch {
-          this._logger.warn('Failed ending pool');
+        } catch (error) {
+          this._logger.warn(`Failed ending pool: ${inspect(error)}`);
         }
         this._pool = undefined;
       }
@@ -83,8 +84,6 @@ export class DatabaseService {
       if (transient && retries > 0) {
         this._logger.warn(`DB transient error ${err?.code ?? ''}; recreating pool & retrying...`);
         try {
-          this._logger.warn('Closing pool...');
-          await this._closePool();
           this._logger.warn('Recreating pool...');
           await this.init(true);
           this._logger.warn('...pool recreated');
