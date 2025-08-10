@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { escape } from 'mysql';
+import { escape } from 'mysql2';
 
 import { AGGREGATE_VIEW_GROUPING_MAP, MAX_AGGREGATE_VALUE_COUNT } from '../../../const';
 import { DatabaseService } from '../../database';
