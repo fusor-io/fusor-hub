@@ -76,7 +76,7 @@ export class DatabaseService {
       );
       return queryResult;
     } catch (err) {
-      this._logger.error(`Error ${err?.code} running query: ${inspect(err)}`);
+      this._logger.error(`Error ${err?.code} running query ${inspect(query)} - ${inspect(err)}`);
       const transient =
         err?.code === 'PROTOCOL_CONNECTION_LOST' ||
         err?.code === 'ECONNRESET' ||
