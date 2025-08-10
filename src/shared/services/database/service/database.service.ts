@@ -10,27 +10,46 @@ export class DatabaseService {
   private readonly _logger = new Logger(this.constructor.name);
   private readonly _tableCache = {};
   private _pool: Pool | undefined;
+  private _recreating?: Promise<void>; // lock
 
   constructor(private readonly _configService: ConfigService) {}
 
-  async init(force = false) {
-    if (!this._pool || force) {
-      await this._createDbIfNotExists();
+  async init(force = false): Promise<void> {
+    if (!force && this._pool) return;
 
-      this._pool = createPool({
-        connectionLimit:
-          this._configService.get<number>(Config.mySqlPoolSize) || DEFAULT_MYSQL.poolSize,
-        waitForConnections: DEFAULT_MYSQL.waitForConnections,
-        queueLimit: DEFAULT_MYSQL.queueLimit,
-        trace: DEFAULT_MYSQL.trace,
-        enableKeepAlive: true,
+    // single-flight: if someone is already recreating, just await
+    if (this._recreating) {
+      await this._recreating;
+      return;
+    }
 
-        host: this._configService.get<string>(Config.mySqlUrl) || DEFAULT_MYSQL.host,
-        port: this._configService.get<number>(Config.mySqlPort) || DEFAULT_MYSQL.port,
-        user: this._configService.get<string>(Config.mySqlUser),
-        password: this._configService.get<string>(Config.mySqlPassword),
-        database: this._configService.get<string>(Config.mySqlDb),
-      });
+    this._recreating = (async () => {
+      // close old pool if any
+      if (this._pool) {
+        this._logger.warn('Recreating pool...');
+        try {
+          await this._pool.end();
+        } catch {
+          this._logger.warn('Failed ending pool');
+        }
+        this._pool = undefined;
+      }
+
+      // (optional) ensure DB exists only on cold start
+      // If you need it only once, guard with a boolean
+      if (!force && !this._pool) {
+        await this._createDbIfNotExists().catch(() => {
+          /* log inside that fn */
+        });
+      }
+
+      this._pool = this._buildPool();
+    })();
+
+    try {
+      await this._recreating;
+    } finally {
+      this._recreating = undefined;
     }
   }
 
@@ -57,12 +76,13 @@ export class DatabaseService {
       const transient =
         err?.code === 'PROTOCOL_CONNECTION_LOST' ||
         err?.code === 'ECONNRESET' ||
+        err?.code === 'ETIMEDOUT' ||
         err?.fatal === true;
 
       if (transient && retries > 0) {
         this._logger.warn(`DB transient error ${err?.code ?? ''}; recreating pool & retrying...`);
         try {
-          await this._pool?.end();
+          await this._closePool();
         } catch {
           this._logger.warn('Failed ending existing pool');
         }
@@ -91,6 +111,42 @@ export class DatabaseService {
     }
 
     this._tableCache[tableName] = true;
+  }
+
+  private _buildPool(): Pool {
+    const pool = createPool({
+      connectionLimit:
+        this._configService.get<number>(Config.mySqlPoolSize) || DEFAULT_MYSQL.poolSize,
+      waitForConnections: DEFAULT_MYSQL.waitForConnections,
+      queueLimit: DEFAULT_MYSQL.queueLimit,
+      trace: DEFAULT_MYSQL.trace,
+      host: this._configService.get<string>(Config.mySqlUrl) || DEFAULT_MYSQL.host,
+      port: this._configService.get<number>(Config.mySqlPort) || DEFAULT_MYSQL.port,
+      user: this._configService.get<string>(Config.mySqlUser),
+      password: this._configService.get<string>(Config.mySqlPassword),
+      database: this._configService.get<string>(Config.mySqlDb),
+    });
+
+    pool.on('connection', (conn: any) => {
+      this._logger.log('Enabling keep alive for connection');
+      conn.stream?.setKeepAlive?.(true, 10_000);
+    });
+
+    pool.on('error', (e: any) => {
+      this._logger.warn(`Pool error: ${e?.code || e?.message}`);
+    });
+
+    return pool;
+  }
+
+  private async _closePool(): Promise<void> {
+    if (!this._pool) {
+      return;
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      this._pool.end((err?: Error) => (err ? reject(err) : resolve()));
+    });
   }
 
   private async _createDbIfNotExists(): Promise<void> {
